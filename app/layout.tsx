@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   keywords:
     "cloud hosting, web hosting, vps hosting, domain, ssl certificate, hosting indonesia, hosting murah, hosting cepat",
   authors: [{ name: "LumiCloud" }],
+  icons: {
+    icon: "favicon.ico",
+  },
   openGraph: {
     title: "LumiCloud - Cloud Hosting Cepat, Aman & Terpercaya",
     description:
