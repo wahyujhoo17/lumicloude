@@ -25,6 +25,18 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const scrollToSection = (href: string) => {
+    const element = document.querySelector(href);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const handleNavClick = (href: string) => {
+    scrollToSection(href);
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -48,22 +60,33 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8">
             {navLinks.map((link) => (
-              <Link
+              <a
                 key={link.name}
                 href={link.href}
-                className="text-gray-300 hover:text-white font-medium transition-colors relative group"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavClick(link.href);
+                }}
+                className="text-gray-300 hover:text-white font-medium transition-colors relative group cursor-pointer"
               >
                 {link.name}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-lumi-blue-400 to-lumi-purple-400 group-hover:w-full transition-all duration-300" />
-              </Link>
+              </a>
             ))}
           </nav>
 
           {/* CTA Button */}
           <div className="hidden lg:flex items-center gap-4">
-            <Link href="#pricing" className="btn-primary text-sm">
+            <a
+              href="#pricing"
+              onClick={(e) => {
+                e.preventDefault();
+                scrollToSection("#pricing");
+              }}
+              className="btn-primary text-sm cursor-pointer"
+            >
               Mulai Sekarang
-            </Link>
+            </a>
           </div>
 
           {/* Mobile Menu Button */}
@@ -80,22 +103,28 @@ export default function Header() {
           <div className="lg:hidden mt-4 glass rounded-xl p-4 animate-fade-in">
             <nav className="flex flex-col gap-4">
               {navLinks.map((link) => (
-                <Link
+                <a
                   key={link.name}
                   href={link.href}
-                  className="text-gray-300 hover:text-white font-medium py-2 px-4 rounded-lg hover:bg-white/10 transition-all"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNavClick(link.href);
+                  }}
+                  className="text-gray-300 hover:text-white font-medium py-2 px-4 rounded-lg hover:bg-white/10 transition-all cursor-pointer"
                 >
                   {link.name}
-                </Link>
+                </a>
               ))}
-              <Link
+              <a
                 href="#pricing"
-                className="btn-primary text-center mt-2"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavClick("#pricing");
+                }}
+                className="btn-primary text-center mt-2 cursor-pointer"
               >
                 Mulai Sekarang
-              </Link>
+              </a>
             </nav>
           </div>
         )}

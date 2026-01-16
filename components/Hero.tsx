@@ -104,7 +104,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto"
+            className="grid grid-cols-3 gap-4 max-w-4xl mx-auto"
           >
             {[
               {
@@ -121,22 +121,22 @@ export default function Hero() {
               },
               {
                 icon: Globe,
-                label: "Data Center",
-                value: "Indonesia & SG",
+                label: "Data Centers",
+                value: "Global",
                 color: "lumi-gold",
               },
             ].map((stat, index) => (
               <div
                 key={index}
-                className="glass-card p-6 hover:scale-105 transition-transform duration-300"
+                className="glass-card p-4 hover:scale-105 transition-transform duration-300"
               >
                 <stat.icon
-                  className={`w-10 h-10 text-${stat.color}-400 mx-auto mb-3`}
+                  className={`w-8 h-8 text-${stat.color}-400 mx-auto mb-2`}
                 />
-                <p className="text-2xl font-bold text-white mb-1">
+                <p className="text-lg font-bold text-white mb-1">
                   {stat.value}
                 </p>
-                <p className="text-gray-400 text-sm">{stat.label}</p>
+                <p className="text-gray-400 text-xs">{stat.label}</p>
               </div>
             ))}
           </motion.div>

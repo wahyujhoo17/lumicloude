@@ -7,12 +7,12 @@ const pricingPlans = [
   {
     name: "Starter",
     description: "Cocok untuk website personal dan blog",
-    price: "25.000",
+    price: "15.000",
     period: "/bulan",
     icon: Server,
     features: [
-      "1 GB SSD Storage",
-      "Unlimited Bandwidth",
+      "500 MB NVMe SSD Storage",
+      "5 GB Bandwidth",
       "1 Website",
       "Free SSL Certificate",
       "Daily Backup",
@@ -29,13 +29,13 @@ const pricingPlans = [
   {
     name: "Business",
     description: "Ideal untuk bisnis dan toko online",
-    price: "75.000",
+    price: "45.000",
     period: "/bulan",
     icon: Rocket,
     features: [
-      "10 GB NVMe SSD",
+      "5 GB NVMe SSD",
       "Unlimited Bandwidth",
-      "Unlimited Website",
+      "5 Website",
       "Free SSL Certificate",
       "Daily Backup",
       "cPanel Access",
@@ -53,11 +53,11 @@ const pricingPlans = [
   {
     name: "Enterprise",
     description: "Untuk website dengan traffic tinggi",
-    price: "150.000",
+    price: "100.000",
     period: "/bulan",
     icon: Crown,
     features: [
-      "50 GB NVMe SSD",
+      "20 GB NVMe SSD",
       "Unlimited Bandwidth",
       "Unlimited Website",
       "Free SSL Wildcard",
@@ -81,18 +81,18 @@ const pricingPlans = [
 const vpsPlans = [
   {
     name: "VPS Basic",
-    specs: "2 vCPU • 2 GB RAM • 40 GB SSD",
-    price: "100.000",
+    specs: "1 vCPU • 1 GB RAM • 10 GB SSD",
+    price: "50.000",
   },
   {
     name: "VPS Standard",
-    specs: "4 vCPU • 4 GB RAM • 80 GB SSD",
-    price: "200.000",
+    specs: "2 vCPU • 2 GB RAM • 20 GB SSD",
+    price: "100.000",
   },
   {
     name: "VPS Pro",
-    specs: "8 vCPU • 8 GB RAM • 160 GB SSD",
-    price: "400.000",
+    specs: "4 vCPU • 4 GB RAM • 40 GB SSD",
+    price: "200.000",
   },
 ];
 
@@ -316,14 +316,6 @@ export default function Pricing() {
                   className="px-8 py-4 bg-gradient-to-r from-lumi-gold-400 to-lumi-gold-500 text-gray-900 font-semibold rounded-xl shadow-lg shadow-lumi-gold-500/30 hover:shadow-lumi-gold-500/50 hover:scale-105 transition-all duration-300 whitespace-nowrap"
                 >
                   Hubungi Sales
-                </a>
-                <a
-                  href="https://wa.me/6281234567890"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-8 py-4 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/20 transition-all duration-300 whitespace-nowrap"
-                >
-                  Chat WhatsApp
                 </a>
               </div>
             </div>
