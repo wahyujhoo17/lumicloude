@@ -1,0 +1,236 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --lumi-blue: #0090e6;
+    --lumi-purple: #7b00e2;
+    --lumi-gold: #ffc51a;
+    --lumi-light-blue: #4db5ff;
+    --lumi-dark-purple: #46007e;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Montserrat', system-ui, sans-serif;
+    background: linear-gradient(180deg, #0a0a1a 0%, #0d0d2b 50%, #0a0a1a 100%);
+    color: #ffffff;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0a0a1a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--lumi-blue), var(--lumi-purple));
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, var(--lumi-light-blue), var(--lumi-purple));
+}
+
+/* Glass Effect */
+@layer components {
+    .glass {
+        @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl;
+    }
+
+    .glass-card {
+        @apply bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl;
+    }
+
+    .btn-primary {
+        @apply px-8 py-4 bg-gradient-to-r from-lumi-blue-500 via-lumi-purple-500 to-lumi-purple-400 text-white font-semibold rounded-xl shadow-lg shadow-lumi-purple-500/30 hover:shadow-lumi-purple-500/50 hover:scale-105 transition-all duration-300;
+    }
+
+    .btn-secondary {
+        @apply px-8 py-4 bg-gradient-to-r from-lumi-gold-400 to-lumi-gold-500 text-gray-900 font-semibold rounded-xl shadow-lg shadow-lumi-gold-500/30 hover:shadow-lumi-gold-500/50 hover:scale-105 transition-all duration-300;
+    }
+
+    .btn-outline {
+        @apply px-8 py-4 bg-transparent border-2 border-lumi-gold-400 text-lumi-gold-400 font-semibold rounded-xl hover:bg-lumi-gold-400 hover:text-gray-900 transition-all duration-300;
+    }
+
+    .gradient-text {
+        @apply bg-gradient-to-r from-lumi-blue-400 via-lumi-purple-400 to-lumi-gold-400 bg-clip-text text-transparent;
+    }
+
+    .gradient-text-gold {
+        @apply bg-gradient-to-r from-lumi-gold-300 via-lumi-gold-400 to-lumi-gold-500 bg-clip-text text-transparent;
+    }
+
+    .section-title {
+        @apply text-4xl md:text-5xl font-bold font-display mb-4;
+    }
+
+    .section-subtitle {
+        @apply text-lg text-gray-400 max-w-2xl mx-auto;
+    }
+}
+
+/* Cloud Background Animation */
+.cloud-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.cloud {
+    position: absolute;
+    background: radial-gradient(ellipse at center, rgba(0, 144, 230, 0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(40px);
+    animation: float 20s ease-in-out infinite;
+}
+
+.cloud-1 {
+    width: 600px;
+    height: 300px;
+    top: 10%;
+    left: -10%;
+    animation-delay: 0s;
+}
+
+.cloud-2 {
+    width: 500px;
+    height: 250px;
+    top: 30%;
+    right: -5%;
+    background: radial-gradient(ellipse at center, rgba(123, 0, 226, 0.15) 0%, transparent 70%);
+    animation-delay: -5s;
+}
+
+.cloud-3 {
+    width: 400px;
+    height: 200px;
+    bottom: 20%;
+    left: 20%;
+    background: radial-gradient(ellipse at center, rgba(255, 197, 26, 0.1) 0%, transparent 70%);
+    animation-delay: -10s;
+}
+
+/* Glowing Effects */
+.glow-blue {
+    box-shadow: 0 0 60px rgba(0, 144, 230, 0.3);
+}
+
+.glow-purple {
+    box-shadow: 0 0 60px rgba(123, 0, 226, 0.3);
+}
+
+.glow-gold {
+    box-shadow: 0 0 60px rgba(255, 197, 26, 0.3);
+}
+
+/* Pricing Card Hover Effect */
+.pricing-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.pricing-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.pricing-card:hover::before {
+    left: 100%;
+}
+
+/* Animated Gradient Border */
+.gradient-border {
+    position: relative;
+    background: linear-gradient(135deg, rgba(0, 144, 230, 0.1), rgba(123, 0, 226, 0.1));
+    border-radius: 1rem;
+}
+
+.gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 1rem;
+    padding: 2px;
+    background: linear-gradient(135deg, var(--lumi-blue), var(--lumi-purple), var(--lumi-gold));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+}
+
+/* Stars Background */
+.stars {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image:
+        radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.3), transparent),
+        radial-gradient(2px 2px at 40px 70px, rgba(255, 255, 255, 0.2), transparent),
+        radial-gradient(1px 1px at 90px 40px, rgba(255, 255, 255, 0.3), transparent),
+        radial-gradient(2px 2px at 130px 80px, rgba(255, 255, 255, 0.2), transparent),
+        radial-gradient(1px 1px at 160px 120px, rgba(255, 255, 255, 0.4), transparent);
+    background-repeat: repeat;
+    background-size: 200px 200px;
+    animation: twinkle 5s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0) translateX(0);
+    }
+
+    25% {
+        transform: translateY(-20px) translateX(10px);
+    }
+
+    50% {
+        transform: translateY(0) translateX(20px);
+    }
+
+    75% {
+        transform: translateY(20px) translateX(10px);
+    }
+}
+
+
+

@@ -1,0 +1,42 @@
+# Node modules
+node_modules/
+
+# Build output
+.next/
+out/
+dist/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Env files
+.env*
+
+# VSCode settings
+.vscode/
+
+# Misc
+*.local
+*.swp
+
+# Backup files
+*.bak
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Coverage
+coverage/
+
+# Next.js static export
+exported/
+
+# Ignore public images cache (optional)
+public/images/cache/
