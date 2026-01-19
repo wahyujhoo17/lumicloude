@@ -5,9 +5,8 @@ import { Star, Quote } from "lucide-react";
 
 const testimonials = [
   {
-    name: "Ahmad Pratama",
-    role: "CEO, TechStartup.id",
-    avatar: "👨‍💼",
+    name: "Lathafannya",
+    role: "CEO, oursee.my.id",
     rating: 5,
     content:
       "LumiCloud memberikan performa luar biasa untuk aplikasi kami. Uptime 100% selama 6 bulan terakhir dan support yang sangat responsif!",
@@ -15,7 +14,6 @@ const testimonials = [
   {
     name: "Sarah Wijaya",
     role: "Web Developer",
-    avatar: "👩‍💻",
     rating: 5,
     content:
       "Migrasi dari hosting lama sangat smooth. Tim support membantu sepenuhnya dan website jadi lebih cepat 3x lipat!",
@@ -23,7 +21,6 @@ const testimonials = [
   {
     name: "Budi Santoso",
     role: "Owner, TokoOnline.com",
-    avatar: "🧑‍💼",
     rating: 5,
     content:
       "Toko online saya tidak pernah down lagi sejak pindah ke LumiCloud. Sangat recommended untuk bisnis online!",
@@ -31,7 +28,6 @@ const testimonials = [
   {
     name: "Dewi Lestari",
     role: "Blogger",
-    avatar: "👩",
     rating: 5,
     content:
       "Harga terjangkau dengan fitur lengkap. SSL gratis dan backup otomatis membuat saya tenang. Terima kasih LumiCloud!",
@@ -39,7 +35,6 @@ const testimonials = [
   {
     name: "Rizky Firmansyah",
     role: "Freelance Developer",
-    avatar: "👨‍💻",
     rating: 5,
     content:
       "Sudah hosting 20+ client di LumiCloud. Tidak pernah ada masalah dan client semua puas dengan performa websitenya.",
@@ -47,12 +42,21 @@ const testimonials = [
   {
     name: "Maya Angelina",
     role: "Marketing Manager",
-    avatar: "👩‍💼",
     rating: 5,
     content:
       "Dashboard yang user-friendly dan support 24/7 yang selalu siap membantu. Best hosting provider yang pernah saya gunakan!",
   },
 ];
+
+// Helper function to get initials from name
+const getInitials = (name: string) => {
+  return name
+    .split(" ")
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+};
 
 export default function Testimonials() {
   return (
@@ -116,8 +120,8 @@ export default function Testimonials() {
 
               {/* Author */}
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-lumi-blue-500/20 to-lumi-purple-500/20 flex items-center justify-center text-2xl">
-                  {testimonial.avatar}
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-lumi-blue-500/20 to-lumi-purple-500/20 flex items-center justify-center text-lg font-semibold text-lumi-blue-300">
+                  {getInitials(testimonial.name)}
                 </div>
                 <div>
                   <p className="font-semibold text-white">{testimonial.name}</p>
@@ -136,7 +140,7 @@ export default function Testimonials() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="mt-16 text-center"
         >
-          <p className="text-gray-400 mb-6">Dipercaya oleh 10,000+ pelanggan</p>
+          <p className="text-gray-400 mb-6">Dipercaya oleh 150+ pelanggan</p>
           <div className="flex flex-wrap justify-center items-center gap-8 opacity-50">
             <div className="text-2xl font-bold text-gray-500">TechCorp</div>
             <div className="text-2xl font-bold text-gray-500">StartupID</div>

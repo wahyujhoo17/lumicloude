@@ -138,7 +138,7 @@ export default function Features() {
         >
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
-              { value: "10,000+", label: "Pelanggan Aktif" },
+              { value: "150+", label: "Pelanggan Aktif" },
               { value: "99.9%", label: "Uptime Rate" },
               { value: "24/7", label: "Customer Support" },
               { value: "50+", label: "Server Locations" },

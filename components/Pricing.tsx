@@ -83,16 +83,19 @@ const vpsPlans = [
     name: "VPS Basic",
     specs: "1 vCPU • 1 GB RAM • 10 GB SSD",
     price: "50.000",
+    soldOut: true,
   },
   {
     name: "VPS Standard",
     specs: "2 vCPU • 2 GB RAM • 20 GB SSD",
     price: "100.000",
+    soldOut: true,
   },
   {
     name: "VPS Pro",
     specs: "4 vCPU • 4 GB RAM • 40 GB SSD",
     price: "200.000",
+    soldOut: true,
   },
 ];
 
@@ -215,15 +218,20 @@ export default function Pricing() {
 
                 {/* CTA Button */}
                 <div className="p-8 pt-0 mt-auto">
-                  <button
-                    className={`w-full py-4 rounded-xl font-semibold transition-all duration-300 ${
+                  <a
+                    href={`https://wa.me/082332238228?text=${encodeURIComponent(
+                      `Halo LumiCloud!\n\nSaya tertarik untuk berlangganan:\n\nPaket: ${plan.name}\nHarga: Rp ${plan.price}${plan.period}\n\nMohon informasi lebih lanjut untuk proses pemesanan.\n\nTerima kasih!`,
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`block w-full py-4 rounded-xl font-semibold transition-all duration-300 text-center ${
                       plan.popular
                         ? "bg-gradient-to-r from-lumi-purple-500 to-lumi-blue-500 text-white shadow-lg shadow-lumi-purple-500/30 hover:shadow-lumi-purple-500/50 hover:scale-[1.02]"
                         : "bg-white/10 text-white hover:bg-white/20 hover:scale-[1.02]"
                     }`}
                   >
                     Pilih Paket {plan.name}
-                  </button>
+                  </a>
                 </div>
               </motion.div>
             );
@@ -255,31 +263,85 @@ export default function Pricing() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group relative rounded-xl border border-white/10 bg-gradient-to-b from-white/[0.08] to-transparent p-6 hover:border-lumi-gold-500/50 hover:shadow-lg hover:shadow-lumi-gold-500/10 transition-all duration-300"
+              className={`group relative rounded-xl border bg-gradient-to-b p-6 transition-all duration-300 ${
+                vps.soldOut
+                  ? "border-red-500/30 from-red-500/5 to-transparent opacity-70"
+                  : "border-white/10 from-white/[0.08] to-transparent hover:border-lumi-gold-500/50 hover:shadow-lg hover:shadow-lumi-gold-500/10"
+              }`}
             >
-              <div className="flex items-center justify-between">
+              {/* Sold Out Badge */}
+              {vps.soldOut && (
+                <>
+                  {/* Diagonal ribbon */}
+                  <div className="absolute -top-1 -right-1 z-20 overflow-hidden w-24 h-24 pointer-events-none">
+                    <div className="absolute top-5 right-[-32px] w-32 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold text-center py-1 rotate-45 shadow-lg">
+                      SOLD OUT
+                    </div>
+                  </div>
+
+                  {/* Overlay effect */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-red-500/[0.02] to-red-600/[0.05] rounded-xl pointer-events-none"></div>
+                </>
+              )}
+
+              <div
+                className={`flex items-center justify-between ${vps.soldOut ? "mt-8" : ""}`}
+              >
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-lg bg-lumi-gold-500/20 flex items-center justify-center">
-                      <Zap className="w-5 h-5 text-lumi-gold-400" />
+                    <div
+                      className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                        vps.soldOut ? "bg-gray-500/20" : "bg-lumi-gold-500/20"
+                      }`}
+                    >
+                      <Zap
+                        className={`w-5 h-5 ${
+                          vps.soldOut ? "text-gray-500" : "text-lumi-gold-400"
+                        }`}
+                      />
                     </div>
-                    <h4 className="text-lg font-bold text-white group-hover:text-lumi-gold-400 transition-colors">
+                    <h4
+                      className={`text-lg font-bold transition-colors ${
+                        vps.soldOut
+                          ? "text-gray-400"
+                          : "text-white group-hover:text-lumi-gold-400"
+                      }`}
+                    >
                       {vps.name}
                     </h4>
                   </div>
-                  <p className="text-gray-400 text-sm pl-[52px]">{vps.specs}</p>
+                  <p
+                    className={`text-sm pl-[52px] ${
+                      vps.soldOut ? "text-gray-500" : "text-gray-400"
+                    }`}
+                  >
+                    {vps.specs}
+                  </p>
                 </div>
                 <div className="text-right ml-4">
                   <p className="text-sm text-gray-500 mb-1">Mulai dari</p>
-                  <p className="text-2xl font-bold text-lumi-gold-400">
+                  <p
+                    className={`text-2xl font-bold ${
+                      vps.soldOut
+                        ? "text-gray-500 line-through"
+                        : "text-lumi-gold-400"
+                    }`}
+                  >
                     Rp {vps.price}
                   </p>
                   <p className="text-gray-500 text-xs">/bulan</p>
                 </div>
               </div>
               <div className="mt-4 pt-4 border-t border-white/10">
-                <button className="w-full py-2.5 rounded-lg bg-lumi-gold-500/10 text-lumi-gold-400 font-medium text-sm hover:bg-lumi-gold-500/20 transition-colors">
-                  Pilih VPS
+                <button
+                  disabled={vps.soldOut}
+                  className={`w-full py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${
+                    vps.soldOut
+                      ? "bg-gradient-to-r from-gray-500/10 to-gray-600/10 text-gray-500 cursor-not-allowed border border-gray-500/20"
+                      : "bg-lumi-gold-500/10 text-lumi-gold-400 hover:bg-lumi-gold-500/20 hover:scale-[1.02]"
+                  }`}
+                >
+                  {vps.soldOut ? "Tidak Tersedia" : "Pilih VPS"}
                 </button>
               </div>
             </motion.div>
