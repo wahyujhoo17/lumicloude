@@ -29,11 +29,11 @@ const pricingPlans = [
   {
     name: "Business",
     description: "Ideal untuk bisnis dan toko online",
-    price: "45.000",
+    price: "30.000",
     period: "/bulan",
     icon: Rocket,
     features: [
-      "5 GB NVMe SSD",
+      "3 GB NVMe SSD",
       "Unlimited Bandwidth",
       "5 Website",
       "Free SSL Certificate",
@@ -53,11 +53,11 @@ const pricingPlans = [
   {
     name: "Enterprise",
     description: "Untuk website dengan traffic tinggi",
-    price: "100.000",
+    price: "70.000",
     period: "/bulan",
     icon: Crown,
     features: [
-      "20 GB NVMe SSD",
+      "10 GB NVMe SSD",
       "Unlimited Bandwidth",
       "Unlimited Website",
       "Free SSL Wildcard",
