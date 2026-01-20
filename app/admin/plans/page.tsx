@@ -27,6 +27,7 @@ interface Plan {
   websites: string;
   isActive: boolean;
   isPopular: boolean;
+  isSoldOut: boolean;
   sortOrder: number;
   features: PlanFeature[];
   createdAt: string;
@@ -107,6 +108,29 @@ export default function AdminPlansPage() {
     } catch (error) {
       console.error("Error updating sold out status:", error);
       setError("Terjadi kesalahan saat mengupdate status sold out paket");
+    }
+  };
+
+  const togglePlanStatus = async (planId: string, isActive: boolean) => {
+    try {
+      const response = await fetch(`/api/plans/${planId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !isActive }),
+      });
+
+      if (response.ok) {
+        setPlans(
+          plans.map((plan) =>
+            plan.id === planId ? { ...plan, isActive: !isActive } : plan,
+          ),
+        );
+      } else {
+        setError("Gagal mengupdate status aktif paket");
+      }
+    } catch (error) {
+      console.error("Error updating plan status:", error);
+      setError("Terjadi kesalahan saat mengupdate status aktif paket");
     }
   };
 
