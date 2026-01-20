@@ -22,13 +22,47 @@ model User {
   websites      Website[]
 }
 
+model Plan {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  displayName String
+  description String
+  type        PlanType     // 'hosting' atau 'vps'
+  price       Int          // harga per bulan dalam rupiah
+  storage     String       // contoh: "500 MB", "3 GB", "Unlimited"
+  bandwidth   String       // contoh: "5 GB", "Unlimited"
+  websites    String       // contoh: "1", "5", "Unlimited"
+  features    PlanFeature[]
+  orders      Order[]
+  isActive    Boolean      @default(true)
+  isPopular   Boolean      @default(false)
+  sortOrder   Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model PlanFeature {
+  id          String   @id @default(cuid())
+  planId      String
+  plan        Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  name        String   // nama fitur
+  description String?  // deskripsi fitur (opsional)
+  isIncluded  Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model Order {
   id              String        @id @default(cuid())
   userId          String
   user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId          String?       // optional untuk backward compatibility
+  plan            Plan?         @relation(fields: [planId], references: [id])
   planName        String
   planType        String        // 'hosting' atau 'vps'
   price           Int           // dalam rupiah
+  duration        Int           @default(1) // dalam bulan
   status          OrderStatus   @default(PENDING)
   paymentMethod   String?
   paymentId       String?       @unique // iPaymu transaction ID
@@ -108,4 +142,9 @@ enum WebsiteStatus {
   ACTIVE
   SUSPENDED
   DELETED
+}
+
+enum PlanType {
+  HOSTING
+  VPS
 }

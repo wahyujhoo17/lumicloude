@@ -16,8 +16,8 @@ export async function POST(req: NextRequest) {
       planName,
       planType,
       price,
-      paymentMethod,
-      paymentChannel,
+      duration = 1,
+      planId,
       metadata,
     } = await req.json();
 
@@ -44,27 +44,27 @@ export async function POST(req: NextRequest) {
     const order = await prisma.order.create({
       data: {
         userId: user.id,
+        planId: planId || null,
         planName,
         planType,
         price,
+        duration,
         status: "PENDING",
         metadata: metadata || {},
       },
     });
 
-    // Buat pembayaran di iPaymu
+    // Buat pembayaran di iPaymu dengan redirect
     const ipaymu = getIPaymuService();
-    const paymentResult = await ipaymu.createPayment({
+    const paymentResult = await ipaymu.createPaymentWithRedirect({
       orderId: order.id,
       amount: price,
       buyerName: user.name,
       buyerEmail: user.email,
       buyerPhone: user.phone || "0000000000",
-      product: [planName],
+      product: [`${planName} Business Lumicloude - ${duration} Bulan`],
       qty: [1],
       price: [price],
-      paymentMethod: paymentMethod || "va",
-      paymentChannel: paymentChannel || "bca",
       returnUrl: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success?orderId=${order.id}`,
       notifyUrl: `${process.env.NEXT_PUBLIC_APP_URL}/api/payment/callback`,
     });
@@ -80,36 +80,39 @@ export async function POST(req: NextRequest) {
     }
 
     console.log(
-      "iPaymu payment result:",
+      "iPaymu payment redirect result:",
       JSON.stringify(paymentResult, null, 2),
     );
 
-    // Extract payment data dengan fallback
+    // Extract payment data dari response redirect
     const paymentData = paymentResult.data?.Data || paymentResult.data;
-    const transactionId =
-      paymentData?.TransactionId || paymentData?.SessionID || order.id;
+    const sessionId = paymentData?.SessionID || paymentData?.SessionId;
+    const redirectUrl = paymentData?.Url;
 
-    // Untuk payment direct, tidak ada URL redirect
-    // Kita redirect ke halaman payment instruction kita sendiri
-    const paymentUrl = `/payment/instruction/${order.id}`;
+    if (!redirectUrl) {
+      console.error("Redirect URL not found in response:", paymentData);
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { status: "FAILED" },
+      });
+      return NextResponse.json(
+        { error: "Redirect URL tidak ditemukan" },
+        { status: 500 },
+      );
+    }
 
     // Update order dengan payment info
     const updatedOrder = await prisma.order.update({
       where: { id: order.id },
       data: {
-        paymentId: String(transactionId),
-        paymentUrl: paymentUrl,
+        paymentId: sessionId,
+        paymentUrl: redirectUrl,
         status: "PROCESSING",
         metadata: {
           ...(metadata || {}),
           paymentDetails: {
-            paymentNo: paymentData?.PaymentNo,
-            channel: paymentData?.Channel,
-            via: paymentData?.Via,
-            total: paymentData?.Total,
-            fee: paymentData?.Fee,
-            expired: paymentData?.Expired,
-            sessionId: paymentData?.SessionId,
+            sessionId: sessionId,
+            redirectUrl: redirectUrl,
           },
         },
       },
@@ -118,7 +121,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       order: updatedOrder,
-      paymentUrl: paymentUrl,
+      paymentUrl: redirectUrl,
       paymentDetails: paymentData,
     });
   } catch (error) {

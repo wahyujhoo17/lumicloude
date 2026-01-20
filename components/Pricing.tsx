@@ -2,127 +2,150 @@
 
 import { motion } from "framer-motion";
 import { Check, Star, Zap, Server, Rocket, Crown } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import OrderModal from "./OrderModal";
 
-const pricingPlans = [
-  {
-    name: "Starter",
-    description: "Cocok untuk website personal dan blog",
-    price: "15.000",
-    period: "/bulan",
-    icon: Server,
-    features: [
-      "500 MB NVMe SSD Storage",
-      "5 GB Bandwidth",
-      "1 Website",
-      "Free SSL Certificate",
-      "Daily Backup",
-      "cPanel Access",
-      "Email Support",
-    ],
-    popular: false,
-    gradient: "from-lumi-blue-500 to-lumi-blue-600",
-    iconBg: "bg-lumi-blue-500/20",
-    iconColor: "text-lumi-blue-400",
-    checkColor: "text-lumi-blue-400",
-    borderColor: "hover:border-lumi-blue-500/50",
-  },
-  {
-    name: "Business",
-    description: "Ideal untuk bisnis dan toko online",
-    price: "30.000",
-    period: "/bulan",
-    icon: Rocket,
-    features: [
-      "3 GB NVMe SSD",
-      "Unlimited Bandwidth",
-      "5 Website",
-      "Free SSL Certificate",
-      "Daily Backup",
-      "cPanel Access",
-      "Free Domain 1 Tahun",
-      "Priority Support 24/7",
-      "Imunify360 Security",
-    ],
-    popular: true,
-    gradient: "from-lumi-purple-500 to-lumi-blue-500",
-    iconBg: "bg-lumi-purple-500/20",
-    iconColor: "text-lumi-purple-400",
-    checkColor: "text-lumi-purple-400",
-    borderColor: "border-lumi-purple-500/50",
-  },
-  {
-    name: "Enterprise",
-    description: "Untuk website dengan traffic tinggi",
-    price: "70.000",
-    period: "/bulan",
-    icon: Crown,
-    features: [
-      "10 GB NVMe SSD",
-      "Unlimited Bandwidth",
-      "Unlimited Website",
-      "Free SSL Wildcard",
-      "Daily Backup + Weekly",
-      "cPanel Access",
-      "Free Domain 1 Tahun",
-      "Dedicated Support 24/7",
-      "Imunify360 + Firewall",
-      "CDN Integration",
-      "Staging Environment",
-    ],
-    popular: false,
-    gradient: "from-lumi-gold-400 to-lumi-gold-600",
-    iconBg: "bg-lumi-gold-500/20",
-    iconColor: "text-lumi-gold-400",
-    checkColor: "text-lumi-gold-400",
-    borderColor: "hover:border-lumi-gold-500/50",
-  },
-];
+interface Plan {
+  id: string;
+  name: string;
+  displayName: string;
+  description: string;
+  type: "HOSTING" | "VPS";
+  price: number;
+  storage: string;
+  bandwidth: string;
+  websites: string;
+  isActive: boolean;
+  isPopular: boolean;
+  features: PlanFeature[];
+}
 
-const vpsPlans = [
-  {
-    name: "VPS Basic",
-    specs: "1 vCPU • 1 GB RAM • 10 GB SSD",
-    price: "50.000",
-    soldOut: true,
-  },
-  {
-    name: "VPS Standard",
-    specs: "2 vCPU • 2 GB RAM • 20 GB SSD",
-    price: "100.000",
-    soldOut: true,
-  },
-  {
-    name: "VPS Pro",
-    specs: "4 vCPU • 4 GB RAM • 40 GB SSD",
-    price: "200.000",
-    soldOut: true,
-  },
-];
+interface PlanFeature {
+  id: string;
+  name: string;
+  description?: string;
+  isIncluded: boolean;
+}
 
 export default function Pricing() {
   const router = useRouter();
-  const [selectedPlan, setSelectedPlan] = useState<{
-    plan: (typeof pricingPlans)[0];
-    type: "hosting" | "vps";
-  } | null>(null);
+  const [hostingPlans, setHostingPlans] = useState<Plan[]>([]);
+  const [vpsPlans, setVpsPlans] = useState<Plan[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleSelectPlan = (
-    plan: (typeof pricingPlans)[0],
-    type: "hosting" | "vps",
-  ) => {
-    // Redirect ke halaman order dengan query params
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        setLoading(true);
+        const [hostingRes, vpsRes] = await Promise.all([
+          fetch("/api/plans?type=hosting"),
+          fetch("/api/plans?type=vps"),
+        ]);
+
+        const hostingData = await hostingRes.json();
+        const vpsData = await vpsRes.json();
+
+        if (hostingData.success) {
+          setHostingPlans(hostingData.data);
+        }
+        if (vpsData.success) {
+          setVpsPlans(vpsData.data);
+        }
+      } catch (error) {
+        console.error("Error fetching plans:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlans();
+  }, []);
+
+  const handleSelectPlan = (plan: Plan, type: string) => {
     const queryParams = new URLSearchParams({
       plan: plan.name,
       type: type,
-      price: plan.price,
-      period: plan.period,
+      price: plan.price.toString(),
+      period: "/bulan",
     });
 
     router.push(`/order?${queryParams.toString()}`);
   };
+
+  const getPlanIcon = (planName: string) => {
+    const name = planName.toLowerCase();
+    if (name.includes("starter") || name.includes("basic")) return Server;
+    if (name.includes("business") || name.includes("standard")) return Rocket;
+    if (name.includes("enterprise") || name.includes("pro")) return Crown;
+    return Server;
+  };
+
+  const getPlanGradient = (planName: string) => {
+    const name = planName.toLowerCase();
+    if (name.includes("starter") || name.includes("basic")) {
+      return "from-lumi-blue-500 to-lumi-blue-600";
+    }
+    if (name.includes("business") || name.includes("standard")) {
+      return "from-lumi-purple-500 to-lumi-blue-500";
+    }
+    if (name.includes("enterprise") || name.includes("pro")) {
+      return "from-lumi-gold-400 to-lumi-gold-600";
+    }
+    return "from-lumi-blue-500 to-lumi-blue-600";
+  };
+
+  const getPlanColors = (planName: string) => {
+    const name = planName.toLowerCase();
+    if (name.includes("starter") || name.includes("basic")) {
+      return {
+        iconBg: "bg-lumi-blue-500/20",
+        iconColor: "text-lumi-blue-400",
+        checkColor: "text-lumi-blue-400",
+        borderColor: "hover:border-lumi-blue-500/50",
+      };
+    }
+    if (name.includes("business") || name.includes("standard")) {
+      return {
+        iconBg: "bg-lumi-purple-500/20",
+        iconColor: "text-lumi-purple-400",
+        checkColor: "text-lumi-purple-400",
+        borderColor: "border-lumi-purple-500/50",
+      };
+    }
+    if (name.includes("enterprise") || name.includes("pro")) {
+      return {
+        iconBg: "bg-lumi-gold-500/20",
+        iconColor: "text-lumi-gold-400",
+        checkColor: "text-lumi-gold-400",
+        borderColor: "hover:border-lumi-gold-500/50",
+      };
+    }
+    return {
+      iconBg: "bg-lumi-blue-500/20",
+      iconColor: "text-lumi-blue-400",
+      checkColor: "text-lumi-blue-400",
+      borderColor: "hover:border-lumi-blue-500/50",
+    };
+  };
+
+  if (loading) {
+    return (
+      <section id="pricing" className="relative py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-700 rounded w-1/3 mx-auto mb-4"></div>
+            <div className="h-4 bg-gray-700 rounded w-1/2 mx-auto mb-12"></div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-gray-800 rounded-2xl p-8 h-96"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="pricing" className="relative py-24 overflow-hidden">
@@ -156,23 +179,26 @@ export default function Pricing() {
 
         {/* Cloud Hosting Plans */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mb-20 items-stretch">
-          {pricingPlans.map((plan, index) => {
-            const IconComponent = plan.icon;
+          {hostingPlans.map((plan, index) => {
+            const IconComponent = getPlanIcon(plan.displayName);
+            const gradient = getPlanGradient(plan.displayName);
+            const colors = getPlanColors(plan.displayName);
+
             return (
               <motion.div
-                key={index}
+                key={plan.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className={`relative flex flex-col h-full rounded-2xl border-2 border-white/10 bg-gradient-to-b from-white/10 to-white/[0.02] backdrop-blur-xl transition-all duration-500 hover:shadow-2xl ${
-                  plan.popular
+                  plan.isPopular
                     ? "border-lumi-purple-500/50 lg:scale-105 shadow-lg shadow-lumi-purple-500/20"
-                    : plan.borderColor
+                    : colors.borderColor
                 }`}
               >
                 {/* Popular Badge */}
-                {plan.popular && (
+                {plan.isPopular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
                     <span className="inline-flex items-center gap-1.5 px-5 py-1.5 bg-gradient-to-r from-lumi-purple-500 to-lumi-blue-500 text-white text-sm font-semibold rounded-full shadow-lg shadow-lumi-purple-500/30">
                       <Star className="w-4 h-4" fill="currentColor" />
@@ -185,14 +211,14 @@ export default function Pricing() {
                 <div className="p-8 pb-0">
                   {/* Icon */}
                   <div
-                    className={`inline-flex items-center justify-center w-14 h-14 rounded-xl ${plan.iconBg} mb-5`}
+                    className={`inline-flex items-center justify-center w-14 h-14 rounded-xl ${colors.iconBg} mb-5`}
                   >
-                    <IconComponent className={`w-7 h-7 ${plan.iconColor}`} />
+                    <IconComponent className={`w-7 h-7 ${colors.iconColor}`} />
                   </div>
 
                   {/* Plan Name & Description */}
                   <h3 className="text-2xl font-bold text-white mb-2">
-                    {plan.name}
+                    {plan.displayName}
                   </h3>
                   <p className="text-gray-400 text-sm">{plan.description}</p>
                 </div>
@@ -204,18 +230,16 @@ export default function Pricing() {
                       Rp
                     </span>
                     <span className="text-5xl font-extrabold text-white tracking-tight">
-                      {plan.price}
+                      {plan.price.toLocaleString()}
                     </span>
-                    <span className="text-gray-400 font-medium">
-                      {plan.period}
-                    </span>
+                    <span className="text-gray-400 font-medium">/bulan</span>
                   </div>
                 </div>
 
                 {/* Divider */}
                 <div className="mx-8">
                   <div
-                    className={`h-px bg-gradient-to-r ${plan.gradient} opacity-30`}
+                    className={`h-px bg-gradient-to-r ${gradient} opacity-30`}
                   />
                 </div>
 
@@ -225,18 +249,23 @@ export default function Pricing() {
                     Yang Anda Dapatkan
                   </p>
                   <ul className="space-y-3.5">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-start gap-3">
+                    {plan.features.slice(0, 6).map((feature) => (
+                      <li key={feature.id} className="flex items-start gap-3">
                         <div
-                          className={`flex-shrink-0 w-5 h-5 rounded-full ${plan.iconBg} flex items-center justify-center mt-0.5`}
+                          className={`flex-shrink-0 w-5 h-5 rounded-full ${colors.iconBg} flex items-center justify-center mt-0.5`}
                         >
-                          <Check className={`w-3 h-3 ${plan.checkColor}`} />
+                          <Check className={`w-3 h-3 ${colors.checkColor}`} />
                         </div>
                         <span className="text-gray-300 text-sm leading-tight">
-                          {feature}
+                          {feature.name}
                         </span>
                       </li>
                     ))}
+                    {plan.features.length > 6 && (
+                      <li className="text-lumi-purple-400 text-sm">
+                        +{plan.features.length - 6} fitur lainnya
+                      </li>
+                    )}
                   </ul>
                 </div>
 
@@ -244,13 +273,16 @@ export default function Pricing() {
                 <div className="p-8 pt-0 mt-auto">
                   <button
                     onClick={() => handleSelectPlan(plan, "hosting")}
+                    disabled={!plan.isActive}
                     className={`block w-full py-4 rounded-xl font-semibold transition-all duration-300 text-center ${
-                      plan.popular
+                      plan.isPopular
                         ? "bg-gradient-to-r from-lumi-purple-500 to-lumi-blue-500 text-white shadow-lg shadow-lumi-purple-500/30 hover:shadow-lumi-purple-500/50 hover:scale-[1.02]"
                         : "bg-white/10 text-white hover:bg-white/20 hover:scale-[1.02]"
-                    }`}
+                    } ${!plan.isActive ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
-                    Pilih Paket {plan.name}
+                    {plan.isActive
+                      ? `Pilih Paket ${plan.displayName}`
+                      : "Tidak Tersedia"}
                   </button>
                 </div>
               </motion.div>
@@ -276,116 +308,134 @@ export default function Pricing() {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {vpsPlans.map((vps, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className={`group relative rounded-xl border bg-gradient-to-b p-6 transition-all duration-300 ${
-                vps.soldOut
-                  ? "border-red-500/30 from-red-500/5 to-transparent opacity-70"
-                  : "border-white/10 from-white/[0.08] to-transparent hover:border-lumi-gold-500/50 hover:shadow-lg hover:shadow-lumi-gold-500/10"
-              }`}
-            >
-              {/* Sold Out Badge */}
-              {vps.soldOut && (
-                <>
-                  {/* Diagonal ribbon */}
-                  <div className="absolute -top-1 -right-1 z-20 overflow-hidden w-24 h-24 pointer-events-none">
-                    <div className="absolute top-5 right-[-32px] w-32 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold text-center py-1 rotate-45 shadow-lg">
-                      SOLD OUT
-                    </div>
-                  </div>
+          {vpsPlans.map((vps, index) => {
+            const IconComponent = getPlanIcon(vps.displayName);
+            const gradient = getPlanGradient(vps.displayName);
+            const colors = getPlanColors(vps.displayName);
 
-                  {/* Overlay effect */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-red-500/[0.02] to-red-600/[0.05] rounded-xl pointer-events-none"></div>
-                </>
-              )}
-
-              <div
-                className={`flex items-center justify-between ${vps.soldOut ? "mt-8" : ""}`}
+            return (
+              <motion.div
+                key={vps.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className={`group relative rounded-xl border bg-gradient-to-b p-6 transition-all duration-300 ${
+                  !vps.isActive
+                    ? "border-red-500/30 from-red-500/5 to-transparent opacity-70"
+                    : "border-white/10 from-white/[0.08] to-transparent hover:border-lumi-gold-500/50 hover:shadow-lg hover:shadow-lumi-gold-500/10"
+                }`}
               >
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div
-                      className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                        vps.soldOut ? "bg-gray-500/20" : "bg-lumi-gold-500/20"
-                      }`}
-                    >
-                      <Zap
-                        className={`w-5 h-5 ${
-                          vps.soldOut ? "text-gray-500" : "text-lumi-gold-400"
-                        }`}
-                      />
+                {/* Sold Out Badge */}
+                {!vps.isActive && (
+                  <>
+                    {/* Diagonal ribbon */}
+                    <div className="absolute -top-1 -right-1 z-20 overflow-hidden w-24 h-24 pointer-events-none">
+                      <div className="absolute top-5 right-[-32px] w-32 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold text-center py-1 rotate-45 shadow-lg">
+                        TIDAK TERSEDIA
+                      </div>
                     </div>
-                    <h4
-                      className={`text-lg font-bold transition-colors ${
-                        vps.soldOut
-                          ? "text-gray-400"
-                          : "text-white group-hover:text-lumi-gold-400"
+
+                    {/* Overlay effect */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-red-500/[0.02] to-red-600/[0.05] rounded-xl pointer-events-none"></div>
+                  </>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div
+                        className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                          !vps.isActive ? "bg-gray-500/20" : colors.iconBg
+                        }`}
+                      >
+                        <IconComponent
+                          className={`w-5 h-5 ${
+                            !vps.isActive ? "text-gray-500" : colors.iconColor
+                          }`}
+                        />
+                      </div>
+                      <h4
+                        className={`text-lg font-bold transition-colors ${
+                          !vps.isActive
+                            ? "text-gray-400"
+                            : "text-white group-hover:text-lumi-gold-400"
+                        }`}
+                      >
+                        {vps.displayName}
+                      </h4>
+                    </div>
+                    <p
+                      className={`text-sm pl-[52px] ${
+                        !vps.isActive ? "text-gray-500" : "text-gray-400"
                       }`}
                     >
-                      {vps.name}
-                    </h4>
+                      {vps.description}
+                    </p>
                   </div>
-                  <p
-                    className={`text-sm pl-[52px] ${
-                      vps.soldOut ? "text-gray-500" : "text-gray-400"
+                  <div className="text-right ml-4">
+                    <p className="text-sm text-gray-500 mb-1">Mulai dari</p>
+                    <p
+                      className={`text-2xl font-bold ${
+                        !vps.isActive
+                          ? "text-gray-500 line-through"
+                          : "text-lumi-gold-400"
+                      }`}
+                    >
+                      Rp {vps.price.toLocaleString()}
+                    </p>
+                    <p className="text-gray-500 text-xs">/bulan</p>
+                  </div>
+                </div>
+
+                {/* Features List */}
+                <div className="mt-4 pt-4 border-t border-white/10">
+                  <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-3">
+                    Spesifikasi
+                  </p>
+                  <ul className="space-y-2">
+                    {vps.features.slice(0, 4).map((feature) => (
+                      <li key={feature.id} className="flex items-start gap-2">
+                        <div
+                          className={`flex-shrink-0 w-4 h-4 rounded-full ${!vps.isActive ? "bg-gray-500/20" : colors.iconBg} flex items-center justify-center mt-0.5`}
+                        >
+                          <Check
+                            className={`w-2.5 h-2.5 ${!vps.isActive ? "text-gray-500" : colors.checkColor}`}
+                          />
+                        </div>
+                        <span
+                          className={`text-xs leading-tight ${!vps.isActive ? "text-gray-500" : "text-gray-300"}`}
+                        >
+                          {feature.name}
+                        </span>
+                      </li>
+                    ))}
+                    {vps.features.length > 4 && (
+                      <li
+                        className={`text-xs ${!vps.isActive ? "text-gray-500" : "text-lumi-gold-400"}`}
+                      >
+                        +{vps.features.length - 4} fitur lainnya
+                      </li>
+                    )}
+                  </ul>
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-white/10">
+                  <button
+                    disabled={!vps.isActive}
+                    onClick={() => vps.isActive && handleSelectPlan(vps, "vps")}
+                    className={`w-full py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${
+                      !vps.isActive
+                        ? "bg-gradient-to-r from-gray-500/10 to-gray-600/10 text-gray-500 cursor-not-allowed border border-gray-500/20"
+                        : "bg-lumi-gold-500/10 text-lumi-gold-400 hover:bg-lumi-gold-500/20 hover:scale-[1.02]"
                     }`}
                   >
-                    {vps.specs}
-                  </p>
+                    {!vps.isActive ? "Tidak Tersedia" : "Pilih VPS"}
+                  </button>
                 </div>
-                <div className="text-right ml-4">
-                  <p className="text-sm text-gray-500 mb-1">Mulai dari</p>
-                  <p
-                    className={`text-2xl font-bold ${
-                      vps.soldOut
-                        ? "text-gray-500 line-through"
-                        : "text-lumi-gold-400"
-                    }`}
-                  >
-                    Rp {vps.price}
-                  </p>
-                  <p className="text-gray-500 text-xs">/bulan</p>
-                </div>
-              </div>
-              <div className="mt-4 pt-4 border-t border-white/10">
-                <button
-                  disabled={vps.soldOut}
-                  onClick={() =>
-                    !vps.soldOut &&
-                    handleSelectPlan(
-                      {
-                        name: vps.name,
-                        description: vps.specs,
-                        price: vps.price,
-                        period: "/bulan",
-                        icon: Server,
-                        features: [vps.specs],
-                        popular: false,
-                        gradient: "from-lumi-gold-500 to-lumi-gold-600",
-                        iconBg: "bg-lumi-gold-500/20",
-                        iconColor: "text-lumi-gold-400",
-                        checkColor: "text-lumi-gold-400",
-                        borderColor: "hover:border-lumi-gold-500/50",
-                      },
-                      "vps",
-                    )
-                  }
-                  className={`w-full py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${
-                    vps.soldOut
-                      ? "bg-gradient-to-r from-gray-500/10 to-gray-600/10 text-gray-500 cursor-not-allowed border border-gray-500/20"
-                      : "bg-lumi-gold-500/10 text-lumi-gold-400 hover:bg-lumi-gold-500/20 hover:scale-[1.02]"
-                  }`}
-                >
-                  {vps.soldOut ? "Tidak Tersedia" : "Pilih VPS"}
-                </button>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* CTA */}

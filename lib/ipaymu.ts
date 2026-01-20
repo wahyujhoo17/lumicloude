@@ -98,6 +98,80 @@ export class IPaymuService {
   }
 
   /**
+   * Buat transaksi pembayaran baru dengan redirect URL
+   * Menggunakan endpoint /api/v2/payment dengan form-data
+   */
+  async createPaymentWithRedirect(params: CreatePaymentParams) {
+    try {
+      const channel = params.paymentChannel?.toLowerCase() || "bca";
+
+      // Prepare form data - only essential parameters
+      const formData = new FormData();
+      formData.append(
+        "product[]",
+        `${params.product[0] || "Hosting"} Business Lumicloude`,
+      );
+      formData.append("qty[]", params.qty[0]?.toString() || "1");
+      formData.append(
+        "price[]",
+        params.price[0]?.toString() || params.amount.toString(),
+      );
+      formData.append(
+        "description[]",
+        `${params.product[0] || "Hosting"} Business Lumicloude - Paket hosting premium dengan fitur lengkap`,
+      );
+      formData.append("returnUrl", params.returnUrl);
+      formData.append("notifyUrl", params.notifyUrl);
+      formData.append("referenceId", params.orderId);
+      formData.append("buyerName", params.buyerName);
+      formData.append("buyerEmail", params.buyerEmail);
+      formData.append("buyerPhone", params.buyerPhone || "08123456789");
+
+      // Add payment method and channel if specified
+      if (params.paymentMethod) {
+        formData.append("paymentMethod", params.paymentMethod);
+      }
+      if (params.paymentChannel) {
+        formData.append("paymentChannel", channel);
+      }
+
+      // Generate signature for form data
+      const signature = this.generateSignature({}, "POST"); // Empty body for form-data
+
+      const response = await axios.post(`${this.baseUrl}/payment`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          signature: signature,
+          va: this.va,
+          timestamp: new Date()
+            .toISOString()
+            .replace(/[-:]/g, "")
+            .replace(/\..+/, ""),
+        },
+      });
+
+      console.log("=== iPaymu Redirect Response ===");
+      console.log("Status:", response.status);
+      console.log("Data:", JSON.stringify(response.data, null, 2));
+      console.log("======================");
+
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error: any) {
+      console.error(
+        "iPaymu create payment redirect error:",
+        error.response?.data || error,
+      );
+      return {
+        success: false,
+        error: error.response?.data?.Message || "Gagal membuat pembayaran",
+      };
+    }
+  }
+
+  /**
    * Buat transaksi pembayaran baru
    */
   async createPayment(params: CreatePaymentParams) {
@@ -126,12 +200,6 @@ export class IPaymuService {
         paymentMethod: params.paymentMethod || "va",
         paymentChannel: channel,
       };
-
-      console.log("=== iPaymu Payment Request ===");
-      console.log("Payment Method:", params.paymentMethod || "va");
-      console.log("Payment Channel:", channel);
-      console.log("Body:", JSON.stringify(body, null, 2));
-      console.log("============================");
 
       const signature = this.generateSignature(body, "POST");
 

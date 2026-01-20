@@ -14,6 +14,10 @@ import {
   Wallet,
   QrCode,
   Store,
+  Calendar,
+  HardDrive,
+  Zap,
+  Globe,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -24,20 +28,51 @@ export default function OrderPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [selectedPayment, setSelectedPayment] = useState("bca");
   const [domain, setDomain] = useState("");
-  const [paymentMethods, setPaymentMethods] = useState([]);
-  const [methodsLoading, setMethodsLoading] = useState(true);
+  const [selectedDuration, setSelectedDuration] = useState(1); // Default 1 bulan
+  const [planData, setPlanData] = useState<any>(null);
+  const [loadingPlan, setLoadingPlan] = useState(true);
 
   // Get plan details from URL params
   const planName = searchParams.get("plan") || "";
   const planType = searchParams.get("type") || "";
-  const price = searchParams.get("price") || "";
+  const basePrice = searchParams.get("price") || "";
   const period = searchParams.get("period") || "";
+
+  // Calculate price based on duration with discount
+  const calculatePrice = (basePrice: string, duration: number) => {
+    const base = parseInt(basePrice.replace(/\./g, "")) || 0;
+    let discount = 0;
+
+    // Apply discount based on duration
+    if (duration === 3)
+      discount = 0.03; // 3% discount
+    else if (duration === 6)
+      discount = 0.06; // 6% discount
+    else if (duration === 12) discount = 0.12; // 12% discount
+
+    const discountedPrice = base * duration * (1 - discount);
+    return Math.round(discountedPrice);
+  };
+
+  // Get discount percentage for display
+  const getDiscountPercentage = (duration: number) => {
+    if (duration === 3) return 3;
+    if (duration === 6) return 6;
+    if (duration === 12) return 12;
+    return 0;
+  };
+
+  const price = calculatePrice(basePrice, selectedDuration);
+
+  // Format display name with branding
+  const displayPlanName = planData
+    ? `${planData.displayName} ${planType === "vps" ? "VPS" : "Hosting"} Lumicloud`
+    : "";
 
   useEffect(() => {
     // Redirect ke home jika tidak ada plan
-    if (!planName || !price) {
+    if (!planName || !basePrice) {
       router.push("/#pricing");
     }
 
@@ -45,63 +80,39 @@ export default function OrderPage() {
     if (status === "unauthenticated") {
       router.push("/?login=true");
     }
-  }, [planName, price, status, router]);
+  }, [planName, basePrice, status, router]);
 
-  // Fetch payment methods
+  // Fetch plan data from database
   useEffect(() => {
-    const fetchPaymentMethods = async () => {
+    const fetchPlanData = async () => {
+      if (!planName) return;
+
       try {
-        const response = await fetch("/api/payment/channels");
+        setLoadingPlan(true);
+        const response = await fetch(`/api/plans?type=hosting`);
         const data = await response.json();
 
         if (data.success) {
-          setPaymentMethods(data.data);
-        } else {
-          console.error("Failed to fetch payment methods:", data.error);
-          // Fallback to static methods if API fails
-          setPaymentMethods([
-            {
-              id: "bca",
-              name: "BCA Virtual Account",
-              channel: "bca",
-              description: "Transfer melalui BCA Virtual Account",
-              enabled: true,
-              logo: "",
-              category: "bank",
-            },
-            {
-              id: "bni",
-              name: "BNI Virtual Account",
-              channel: "bni",
-              description: "Transfer melalui BNI Virtual Account",
-              enabled: true,
-              logo: "",
-              category: "bank",
-            },
-            // Add more fallback methods as needed
-          ]);
+          // Find plan by name (case insensitive)
+          const plan = data.data.find(
+            (p: any) => p.name.toLowerCase() === planName.toLowerCase(),
+          );
+
+          if (plan) {
+            setPlanData(plan);
+          } else {
+            console.error("Plan not found:", planName);
+          }
         }
       } catch (error) {
-        console.error("Error fetching payment methods:", error);
-        // Fallback to static methods
-        setPaymentMethods([
-          {
-            id: "bca",
-            name: "BCA Virtual Account",
-            channel: "bca",
-            description: "Transfer melalui BCA Virtual Account",
-            enabled: true,
-            logo: "",
-            category: "bank",
-          },
-        ]);
+        console.error("Error fetching plan data:", error);
       } finally {
-        setMethodsLoading(false);
+        setLoadingPlan(false);
       }
     };
 
-    fetchPaymentMethods();
-  }, []);
+    fetchPlanData();
+  }, [planName]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,48 +120,16 @@ export default function OrderPage() {
     setError("");
 
     try {
-      const selectedMethod = paymentMethods.find(
-        (m) => m.id === selectedPayment,
-      );
-
-      if (!selectedMethod) {
-        throw new Error("Metode pembayaran tidak valid");
-      }
-
-      // QRIS only available in production
-      const isDev =
-        process.env.NEXT_PUBLIC_ENV === "development" ||
-        process.env.NODE_ENV !== "production";
-      if (selectedMethod.category === "qris" && isDev) {
-        setError(
-          "QRIS hanya tersedia di mode produksi. Silakan pilih metode lain.",
-        );
-        setLoading(false);
-        return;
-      }
-
-      // Tentukan payment method berdasarkan category
-      let paymentMethod = "va"; // default Virtual Account
-      if (selectedMethod.category === "ewallet") {
-        paymentMethod = "cstore"; // E-wallet menggunakan method cstore di iPaymu
-      } else if (selectedMethod.category === "qris") {
-        paymentMethod = "qris";
-      } else if (selectedMethod.category === "retail") {
-        paymentMethod = "cstore";
-      } else if (selectedMethod.id === "cc") {
-        paymentMethod = "cc";
-      }
-
       const paymentRes = await fetch("/api/payment/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
+          planId: planData?.id || null,
           planName: planName,
           planType: planType,
-          price: parseInt(price.replace(/\./g, "")),
-          paymentMethod: paymentMethod,
-          paymentChannel: selectedMethod.channel,
+          price: price,
+          duration: selectedDuration,
           metadata: {
             domain: domain || null,
             source: "order-page",
@@ -219,7 +198,7 @@ export default function OrderPage() {
                 Checkout Order
               </h1>
               <p className="text-gray-400 mb-8">
-                Lengkapi data dan pilih metode pembayaran
+                Pilih durasi paket dan lengkapi informasi domain
               </p>
 
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -279,105 +258,129 @@ export default function OrderPage() {
                   </div>
                 )}
 
-                {/* Payment Method Selection */}
+                {/* Package Duration Selection */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                    <CreditCard className="w-5 h-5" />
-                    Pilih Metode Pembayaran
+                    <Calendar className="w-5 h-5" />
+                    Pilih Durasi Paket
+                  </h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {[1, 3, 6, 12].map((months) => (
+                      <label
+                        key={months}
+                        className={`relative flex items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                          selectedDuration === months
+                            ? "border-lumi-purple-500 bg-lumi-purple-500/10 shadow-lg shadow-lumi-purple-500/20"
+                            : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="duration"
+                          value={months}
+                          checked={selectedDuration === months}
+                          onChange={(e) =>
+                            setSelectedDuration(parseInt(e.target.value))
+                          }
+                          className="sr-only"
+                        />
+                        <div className="text-center">
+                          <p className="font-semibold text-white">
+                            {months} {months === 1 ? "Bulan" : "Bulan"}
+                          </p>
+                          {months > 1 && (
+                            <p className="text-xs text-lumi-gold-400 font-semibold">
+                              Diskon {getDiscountPercentage(months)}%
+                            </p>
+                          )}
+                        </div>
+                        {selectedDuration === months && (
+                          <CheckCircle2 className="absolute top-2 right-2 w-4 h-4 text-lumi-purple-500" />
+                        )}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Package Specifications */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                    <HardDrive className="w-5 h-5" />
+                    Spesifikasi Paket
                   </h3>
 
-                  {methodsLoading ? (
-                    <div className="flex items-center justify-center py-8">
+                  {loadingPlan ? (
+                    <div className="bg-white/5 rounded-lg p-6 flex items-center justify-center">
                       <Loader2 className="w-6 h-6 animate-spin text-lumi-purple-500" />
                       <span className="ml-2 text-gray-400">
-                        Memuat metode pembayaran...
+                        Memuat spesifikasi...
                       </span>
                     </div>
-                  ) : (
-                    <>
-                      {/* Group by category */}
-                      {[
-                        {
-                          key: "bank",
-                          title: "Transfer Bank / Virtual Account",
-                        },
-                        { key: "ewallet", title: "E-Wallet" },
-                        { key: "qris", title: "QRIS" },
-                        { key: "retail", title: "Retail / Convenience Store" },
-                      ].map((group) => {
-                        const methods = paymentMethods.filter(
-                          (m) => m.category === group.key && m.enabled,
-                        );
-                        if (methods.length === 0) return null;
-
-                        return (
-                          <div key={group.key} className="space-y-2">
-                            <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold px-2">
-                              {group.title}
+                  ) : planData ? (
+                    <div className="bg-white/5 rounded-lg p-6 space-y-4">
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="flex items-center gap-3">
+                          <HardDrive className="w-5 h-5 text-lumi-purple-500" />
+                          <div>
+                            <p className="text-sm text-gray-400">Storage</p>
+                            <p className="text-white font-semibold">
+                              {planData.storage}
                             </p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              {methods.map((method) => (
-                                <label
-                                  key={method.id}
-                                  className={`relative flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                                    selectedPayment === method.id
-                                      ? "border-lumi-purple-500 bg-lumi-purple-500/10 shadow-lg shadow-lumi-purple-500/20"
-                                      : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
-                                  }`}
-                                >
-                                  <input
-                                    type="radio"
-                                    name="payment"
-                                    value={method.id}
-                                    checked={selectedPayment === method.id}
-                                    onChange={(e) =>
-                                      setSelectedPayment(e.target.value)
-                                    }
-                                    className="sr-only"
-                                  />
-                                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-lumi-purple-500/20 to-lumi-blue-500/20 flex-shrink-0">
-                                    {method.logo ? (
-                                      <img
-                                        src={method.logo}
-                                        alt={method.name}
-                                        className="w-8 h-8 object-contain"
-                                      />
-                                    ) : method.category === "qris" ? (
-                                      <QrCode className="w-6 h-6 text-lumi-purple-500" />
-                                    ) : method.category === "ewallet" ? (
-                                      <Wallet className="w-6 h-6 text-lumi-purple-500" />
-                                    ) : method.category === "retail" ? (
-                                      <Store className="w-6 h-6 text-lumi-purple-500" />
-                                    ) : (
-                                      <Building2 className="w-6 h-6 text-lumi-purple-500" />
-                                    )}
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-white text-sm truncate">
-                                      {method.name}
-                                    </p>
-                                    <p className="text-xs text-gray-400 truncate">
-                                      {method.description}
-                                    </p>
-                                    {method.fee && (
-                                      <p className="text-xs text-gray-500">
-                                        Biaya:{" "}
-                                        {method.fee.ActualFeeType === "PERCENT"
-                                          ? `${method.fee.ActualFee}%`
-                                          : `Rp ${method.fee.ActualFee.toLocaleString()}`}
-                                      </p>
-                                    )}
-                                  </div>
-                                  {selectedPayment === method.id && (
-                                    <CheckCircle2 className="w-5 h-5 text-lumi-purple-500 flex-shrink-0" />
-                                  )}
-                                </label>
-                              ))}
-                            </div>
                           </div>
-                        );
-                      })}
-                    </>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Zap className="w-5 h-5 text-lumi-purple-500" />
+                          <div>
+                            <p className="text-sm text-gray-400">Bandwidth</p>
+                            <p className="text-white font-semibold">
+                              {planData.bandwidth}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Globe className="w-5 h-5 text-lumi-purple-500" />
+                          <div>
+                            <p className="text-sm text-gray-400">Website</p>
+                            <p className="text-white font-semibold">
+                              {planData.websites}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Shield className="w-5 h-5 text-lumi-purple-500" />
+                          <div>
+                            <p className="text-sm text-gray-400">
+                              SSL Certificate
+                            </p>
+                            <p className="text-white font-semibold">Free SSL</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="pt-4 border-t border-white/10">
+                        <h4 className="text-white font-semibold mb-2">
+                          Fitur Utama:
+                        </h4>
+                        <ul className="text-sm text-gray-300 space-y-1">
+                          {planData.features
+                            .slice(0, 6)
+                            .map((feature: any, index: number) => (
+                              <li key={index}>• {feature.name}</li>
+                            ))}
+                          {planData.features.length > 6 && (
+                            <li className="text-lumi-purple-400">
+                              • Dan {planData.features.length - 6} fitur
+                              lainnya...
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-white/5 rounded-lg p-6 text-center">
+                      <p className="text-gray-400">
+                        Spesifikasi paket tidak ditemukan
+                      </p>
+                    </div>
                   )}
                 </div>
 
@@ -386,11 +389,12 @@ export default function OrderPage() {
                   <Shield className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
                   <div className="text-sm text-gray-300">
                     <p className="font-semibold text-white mb-1">
-                      Pembayaran Aman
+                      Pembayaran Aman & Langsung
                     </p>
                     <p>
-                      Transaksi Anda diproses dengan aman oleh iPaymu, payment
-                      gateway terpercaya di Indonesia.
+                      Setelah klik "Bayar Sekarang", Anda akan diarahkan ke
+                      halaman pembayaran iPaymu yang aman dan terpercaya untuk
+                      memilih metode pembayaran dan menyelesaikan transaksi.
                     </p>
                   </div>
                 </div>
@@ -407,7 +411,7 @@ export default function OrderPage() {
                       Memproses...
                     </>
                   ) : (
-                    <>Lanjut ke Pembayaran</>
+                    <>Bayar Sekarang</>
                   )}
                 </button>
               </form>
@@ -424,23 +428,48 @@ export default function OrderPage() {
               <div className="space-y-4">
                 <div>
                   <p className="text-sm text-gray-400">Paket</p>
-                  <p className="text-lg font-semibold text-white">{planName}</p>
+                  <p className="text-lg font-semibold text-white">
+                    {displayPlanName}
+                  </p>
                 </div>
 
                 <div>
-                  <p className="text-sm text-gray-400">Periode</p>
-                  <p className="text-white">{period}</p>
+                  <p className="text-sm text-gray-400">Durasi</p>
+                  <p className="text-white">
+                    {selectedDuration}{" "}
+                    {selectedDuration === 1 ? "Bulan" : "Bulan"}
+                  </p>
                 </div>
 
                 <div className="pt-4 border-t border-white/10">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-400">Subtotal</span>
-                    <span className="text-white">Rp {price}</span>
+                    <span className="text-gray-400">Harga per Bulan</span>
+                    <span className="text-white">
+                      Rp{" "}
+                      {parseInt(basePrice.replace(/\./g, "")).toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between mt-2">
-                    <span className="text-gray-400">Biaya Admin</span>
-                    <span className="text-white">Rp 0</span>
+                    <span className="text-gray-400">
+                      Durasi ({selectedDuration} bulan)
+                    </span>
+                    <span className="text-white">x {selectedDuration}</span>
                   </div>
+                  {getDiscountPercentage(selectedDuration) > 0 && (
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-lumi-gold-400">
+                        Diskon {getDiscountPercentage(selectedDuration)}%
+                      </span>
+                      <span className="text-lumi-gold-400">
+                        -Rp{" "}
+                        {(
+                          parseInt(basePrice.replace(/\./g, "")) *
+                          selectedDuration *
+                          (getDiscountPercentage(selectedDuration) / 100)
+                        ).toLocaleString()}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-4 border-t border-white/10">
@@ -449,7 +478,7 @@ export default function OrderPage() {
                       Total
                     </span>
                     <span className="text-2xl font-bold gradient-text">
-                      Rp {price}
+                      Rp {price.toLocaleString()}
                     </span>
                   </div>
                 </div>
