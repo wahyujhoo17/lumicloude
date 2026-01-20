@@ -1,6 +1,18 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
 
-const prisma = new PrismaClient();
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+// Create PostgreSQL adapter
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+
+const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
 async function main() {
   console.log("Seeding plans...");
@@ -21,6 +33,7 @@ async function main() {
       bandwidth: "5 GB",
       websites: "1",
       isPopular: false,
+      isSoldOut: false,
       sortOrder: 1,
       features: {
         create: [
@@ -47,6 +60,7 @@ async function main() {
       bandwidth: "Unlimited",
       websites: "5",
       isPopular: true,
+      isSoldOut: false,
       sortOrder: 2,
       features: {
         create: [
@@ -75,6 +89,7 @@ async function main() {
       bandwidth: "Unlimited",
       websites: "Unlimited",
       isPopular: false,
+      isSoldOut: false,
       sortOrder: 3,
       features: {
         create: [
@@ -106,6 +121,7 @@ async function main() {
       bandwidth: "Unlimited",
       websites: "Unlimited",
       isPopular: false,
+      isSoldOut: false,
       sortOrder: 4,
       features: {
         create: [
@@ -132,6 +148,7 @@ async function main() {
       bandwidth: "Unlimited",
       websites: "Unlimited",
       isPopular: false,
+      isSoldOut: false,
       sortOrder: 5,
       features: {
         create: [
@@ -158,6 +175,7 @@ async function main() {
       bandwidth: "Unlimited",
       websites: "Unlimited",
       isPopular: false,
+      isSoldOut: false,
       sortOrder: 6,
       features: {
         create: [

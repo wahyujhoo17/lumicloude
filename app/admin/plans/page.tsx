@@ -87,26 +87,26 @@ export default function AdminPlansPage() {
     }
   };
 
-  const togglePlanStatus = async (planId: string, isActive: boolean) => {
+  const toggleSoldOutStatus = async (planId: string, isSoldOut: boolean) => {
     try {
       const response = await fetch(`/api/plans/${planId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isActive: !isActive }),
+        body: JSON.stringify({ isSoldOut: !isSoldOut }),
       });
 
       if (response.ok) {
         setPlans(
           plans.map((plan) =>
-            plan.id === planId ? { ...plan, isActive: !isActive } : plan,
+            plan.id === planId ? { ...plan, isSoldOut: !isSoldOut } : plan,
           ),
         );
       } else {
-        setError("Gagal mengupdate status paket");
+        setError("Gagal mengupdate status sold out paket");
       }
     } catch (error) {
-      console.error("Error updating plan:", error);
-      setError("Terjadi kesalahan saat mengupdate paket");
+      console.error("Error updating sold out status:", error);
+      setError("Terjadi kesalahan saat mengupdate status sold out paket");
     }
   };
 
@@ -202,6 +202,9 @@ export default function AdminPlansPage() {
                       Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                      Sold Out
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                       Aksi
                     </th>
                   </tr>
@@ -254,6 +257,22 @@ export default function AdminPlansPage() {
                           )}
                         </div>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          {plan.isSoldOut ? (
+                            <XCircle className="w-5 h-5 text-red-400" />
+                          ) : (
+                            <CheckCircle className="w-5 h-5 text-green-400" />
+                          )}
+                          <span
+                            className={`text-sm ${
+                              plan.isSoldOut ? "text-red-400" : "text-green-400"
+                            }`}
+                          >
+                            {plan.isSoldOut ? "Sold Out" : "Tersedia"}
+                          </span>
+                        </div>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center gap-2">
                           <button
@@ -271,6 +290,27 @@ export default function AdminPlansPage() {
                               <EyeOff className="w-4 h-4" />
                             ) : (
                               <Eye className="w-4 h-4" />
+                            )}
+                          </button>
+                          <button
+                            onClick={() =>
+                              toggleSoldOutStatus(plan.id, plan.isSoldOut)
+                            }
+                            className={`p-1 rounded ${
+                              plan.isSoldOut
+                                ? "text-red-400 hover:text-gray-400"
+                                : "text-gray-400 hover:text-red-400"
+                            }`}
+                            title={
+                              plan.isSoldOut
+                                ? "Tandai Tersedia"
+                                : "Tandai Sold Out"
+                            }
+                          >
+                            {plan.isSoldOut ? (
+                              <CheckCircle className="w-4 h-4" />
+                            ) : (
+                              <XCircle className="w-4 h-4" />
                             )}
                           </button>
                           <Link

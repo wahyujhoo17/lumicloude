@@ -36,6 +36,7 @@ model Plan {
   orders      Order[]
   isActive    Boolean      @default(true)
   isPopular   Boolean      @default(false)
+  isSoldOut   Boolean      @default(false)
   sortOrder   Int          @default(0)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt

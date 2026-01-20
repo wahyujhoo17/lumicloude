@@ -18,6 +18,7 @@ interface Plan {
   websites: string;
   isActive: boolean;
   isPopular: boolean;
+  isSoldOut: boolean;
   features: PlanFeature[];
 }
 
@@ -191,10 +192,12 @@ export default function Pricing() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className={`relative flex flex-col h-full rounded-2xl border-2 border-white/10 bg-gradient-to-b from-white/10 to-white/[0.02] backdrop-blur-xl transition-all duration-500 hover:shadow-2xl ${
-                  plan.isPopular
-                    ? "border-lumi-purple-500/50 lg:scale-105 shadow-lg shadow-lumi-purple-500/20"
-                    : colors.borderColor
+                className={`relative flex flex-col h-full rounded-2xl border-2 bg-gradient-to-b backdrop-blur-xl transition-all duration-500 hover:shadow-2xl ${
+                  plan.isSoldOut
+                    ? "border-red-500/30 from-red-500/5 to-transparent opacity-70"
+                    : plan.isPopular
+                      ? "border-lumi-purple-500/50 lg:scale-105 shadow-lg shadow-lumi-purple-500/20 from-white/10 to-white/[0.02]"
+                      : `border-white/10 from-white/10 to-white/[0.02] ${colors.borderColor}`
                 }`}
               >
                 {/* Popular Badge */}
@@ -207,32 +210,79 @@ export default function Pricing() {
                   </div>
                 )}
 
+                {/* Sold Out Badge */}
+                {plan.isSoldOut && (
+                  <>
+                    {/* Diagonal ribbon */}
+                    <div className="absolute -top-1 -right-1 z-20 overflow-hidden w-24 h-24 pointer-events-none">
+                      <div className="absolute top-5 right-[-32px] w-32 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold text-center py-1 rotate-45 shadow-lg">
+                        SOLD OUT
+                      </div>
+                    </div>
+
+                    {/* Overlay effect */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-red-500/[0.02] to-red-600/[0.05] rounded-2xl pointer-events-none"></div>
+                  </>
+                )}
+
                 {/* Card Header */}
                 <div className="p-8 pb-0">
                   {/* Icon */}
                   <div
-                    className={`inline-flex items-center justify-center w-14 h-14 rounded-xl ${colors.iconBg} mb-5`}
+                    className={`inline-flex items-center justify-center w-14 h-14 rounded-xl mb-5 ${
+                      plan.isSoldOut ? "bg-gray-500/20" : colors.iconBg
+                    }`}
                   >
-                    <IconComponent className={`w-7 h-7 ${colors.iconColor}`} />
+                    <IconComponent
+                      className={`w-7 h-7 ${
+                        plan.isSoldOut ? "text-gray-500" : colors.iconColor
+                      }`}
+                    />
                   </div>
 
                   {/* Plan Name & Description */}
-                  <h3 className="text-2xl font-bold text-white mb-2">
+                  <h3
+                    className={`text-2xl font-bold mb-2 ${
+                      plan.isSoldOut ? "text-gray-400" : "text-white"
+                    }`}
+                  >
                     {plan.displayName}
                   </h3>
-                  <p className="text-gray-400 text-sm">{plan.description}</p>
+                  <p
+                    className={`text-sm ${
+                      plan.isSoldOut ? "text-gray-500" : "text-gray-400"
+                    }`}
+                  >
+                    {plan.description}
+                  </p>
                 </div>
 
                 {/* Price Section */}
                 <div className="p-8 pt-6">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-sm text-gray-400 font-medium">
+                    <span
+                      className={`text-sm font-medium ${
+                        plan.isSoldOut ? "text-gray-500" : "text-gray-400"
+                      }`}
+                    >
                       Rp
                     </span>
-                    <span className="text-5xl font-extrabold text-white tracking-tight">
+                    <span
+                      className={`text-5xl font-extrabold tracking-tight ${
+                        plan.isSoldOut
+                          ? "text-gray-500 line-through"
+                          : "text-white"
+                      }`}
+                    >
                       {plan.price.toLocaleString()}
                     </span>
-                    <span className="text-gray-400 font-medium">/bulan</span>
+                    <span
+                      className={`font-medium ${
+                        plan.isSoldOut ? "text-gray-500" : "text-gray-400"
+                      }`}
+                    >
+                      /bulan
+                    </span>
                   </div>
                 </div>
 
@@ -252,17 +302,35 @@ export default function Pricing() {
                     {plan.features.slice(0, 6).map((feature) => (
                       <li key={feature.id} className="flex items-start gap-3">
                         <div
-                          className={`flex-shrink-0 w-5 h-5 rounded-full ${colors.iconBg} flex items-center justify-center mt-0.5`}
+                          className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5 ${
+                            plan.isSoldOut ? "bg-gray-500/20" : colors.iconBg
+                          }`}
                         >
-                          <Check className={`w-3 h-3 ${colors.checkColor}`} />
+                          <Check
+                            className={`w-3 h-3 ${
+                              plan.isSoldOut
+                                ? "text-gray-500"
+                                : colors.checkColor
+                            }`}
+                          />
                         </div>
-                        <span className="text-gray-300 text-sm leading-tight">
+                        <span
+                          className={`text-sm leading-tight ${
+                            plan.isSoldOut ? "text-gray-500" : "text-gray-300"
+                          }`}
+                        >
                           {feature.name}
                         </span>
                       </li>
                     ))}
                     {plan.features.length > 6 && (
-                      <li className="text-lumi-purple-400 text-sm">
+                      <li
+                        className={`text-sm ${
+                          plan.isSoldOut
+                            ? "text-gray-600"
+                            : "text-lumi-purple-400"
+                        }`}
+                      >
                         +{plan.features.length - 6} fitur lainnya
                       </li>
                     )}
@@ -273,16 +341,20 @@ export default function Pricing() {
                 <div className="p-8 pt-0 mt-auto">
                   <button
                     onClick={() => handleSelectPlan(plan, "hosting")}
-                    disabled={!plan.isActive}
+                    disabled={!plan.isActive || plan.isSoldOut}
                     className={`block w-full py-4 rounded-xl font-semibold transition-all duration-300 text-center ${
-                      plan.isPopular
-                        ? "bg-gradient-to-r from-lumi-purple-500 to-lumi-blue-500 text-white shadow-lg shadow-lumi-purple-500/30 hover:shadow-lumi-purple-500/50 hover:scale-[1.02]"
-                        : "bg-white/10 text-white hover:bg-white/20 hover:scale-[1.02]"
-                    } ${!plan.isActive ? "opacity-50 cursor-not-allowed" : ""}`}
+                      plan.isSoldOut
+                        ? "bg-gradient-to-r from-gray-500/10 to-gray-600/10 text-gray-500 cursor-not-allowed border border-gray-500/20"
+                        : plan.isPopular
+                          ? "bg-gradient-to-r from-lumi-purple-500 to-lumi-blue-500 text-white shadow-lg shadow-lumi-purple-500/30 hover:shadow-lumi-purple-500/50 hover:scale-[1.02]"
+                          : "bg-white/10 text-white hover:bg-white/20 hover:scale-[1.02]"
+                    }`}
                   >
-                    {plan.isActive
-                      ? `Pilih Paket ${plan.displayName}`
-                      : "Tidak Tersedia"}
+                    {plan.isSoldOut
+                      ? "Sold Out"
+                      : plan.isActive
+                        ? `Pilih Paket ${plan.displayName}`
+                        : "Tidak Tersedia"}
                   </button>
                 </div>
               </motion.div>
@@ -321,18 +393,18 @@ export default function Pricing() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className={`group relative rounded-xl border bg-gradient-to-b p-6 transition-all duration-300 ${
-                  !vps.isActive
+                  vps.isSoldOut
                     ? "border-red-500/30 from-red-500/5 to-transparent opacity-70"
                     : "border-white/10 from-white/[0.08] to-transparent hover:border-lumi-gold-500/50 hover:shadow-lg hover:shadow-lumi-gold-500/10"
                 }`}
               >
                 {/* Sold Out Badge */}
-                {!vps.isActive && (
+                {vps.isSoldOut && (
                   <>
                     {/* Diagonal ribbon */}
                     <div className="absolute -top-1 -right-1 z-20 overflow-hidden w-24 h-24 pointer-events-none">
                       <div className="absolute top-5 right-[-32px] w-32 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold text-center py-1 rotate-45 shadow-lg">
-                        TIDAK TERSEDIA
+                        SOLD OUT
                       </div>
                     </div>
 
@@ -346,18 +418,18 @@ export default function Pricing() {
                     <div className="flex items-center gap-3 mb-2">
                       <div
                         className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                          !vps.isActive ? "bg-gray-500/20" : colors.iconBg
+                          vps.isSoldOut ? "bg-gray-500/20" : colors.iconBg
                         }`}
                       >
                         <IconComponent
                           className={`w-5 h-5 ${
-                            !vps.isActive ? "text-gray-500" : colors.iconColor
+                            vps.isSoldOut ? "text-gray-500" : colors.iconColor
                           }`}
                         />
                       </div>
                       <h4
                         className={`text-lg font-bold transition-colors ${
-                          !vps.isActive
+                          vps.isSoldOut
                             ? "text-gray-400"
                             : "text-white group-hover:text-lumi-gold-400"
                         }`}
@@ -367,7 +439,7 @@ export default function Pricing() {
                     </div>
                     <p
                       className={`text-sm pl-[52px] ${
-                        !vps.isActive ? "text-gray-500" : "text-gray-400"
+                        vps.isSoldOut ? "text-gray-500" : "text-gray-400"
                       }`}
                     >
                       {vps.description}
@@ -377,7 +449,7 @@ export default function Pricing() {
                     <p className="text-sm text-gray-500 mb-1">Mulai dari</p>
                     <p
                       className={`text-2xl font-bold ${
-                        !vps.isActive
+                        vps.isSoldOut
                           ? "text-gray-500 line-through"
                           : "text-lumi-gold-400"
                       }`}
@@ -397,14 +469,14 @@ export default function Pricing() {
                     {vps.features.slice(0, 4).map((feature) => (
                       <li key={feature.id} className="flex items-start gap-2">
                         <div
-                          className={`flex-shrink-0 w-4 h-4 rounded-full ${!vps.isActive ? "bg-gray-500/20" : colors.iconBg} flex items-center justify-center mt-0.5`}
+                          className={`flex-shrink-0 w-4 h-4 rounded-full ${vps.isSoldOut ? "bg-gray-500/20" : colors.iconBg} flex items-center justify-center mt-0.5`}
                         >
                           <Check
-                            className={`w-2.5 h-2.5 ${!vps.isActive ? "text-gray-500" : colors.checkColor}`}
+                            className={`w-2.5 h-2.5 ${vps.isSoldOut ? "text-gray-500" : colors.checkColor}`}
                           />
                         </div>
                         <span
-                          className={`text-xs leading-tight ${!vps.isActive ? "text-gray-500" : "text-gray-300"}`}
+                          className={`text-xs leading-tight ${vps.isSoldOut ? "text-gray-500" : "text-gray-300"}`}
                         >
                           {feature.name}
                         </span>
@@ -412,7 +484,7 @@ export default function Pricing() {
                     ))}
                     {vps.features.length > 4 && (
                       <li
-                        className={`text-xs ${!vps.isActive ? "text-gray-500" : "text-lumi-gold-400"}`}
+                        className={`text-xs ${vps.isSoldOut ? "text-gray-500" : "text-lumi-gold-400"}`}
                       >
                         +{vps.features.length - 4} fitur lainnya
                       </li>
@@ -422,15 +494,17 @@ export default function Pricing() {
 
                 <div className="mt-4 pt-4 border-t border-white/10">
                   <button
-                    disabled={!vps.isActive}
-                    onClick={() => vps.isActive && handleSelectPlan(vps, "vps")}
+                    disabled={vps.isSoldOut}
+                    onClick={() =>
+                      !vps.isSoldOut && handleSelectPlan(vps, "vps")
+                    }
                     className={`w-full py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${
-                      !vps.isActive
+                      vps.isSoldOut
                         ? "bg-gradient-to-r from-gray-500/10 to-gray-600/10 text-gray-500 cursor-not-allowed border border-gray-500/20"
                         : "bg-lumi-gold-500/10 text-lumi-gold-400 hover:bg-lumi-gold-500/20 hover:scale-[1.02]"
                     }`}
                   >
-                    {!vps.isActive ? "Tidak Tersedia" : "Pilih VPS"}
+                    {vps.isSoldOut ? "Sold Out" : "Pilih VPS"}
                   </button>
                 </div>
               </motion.div>
