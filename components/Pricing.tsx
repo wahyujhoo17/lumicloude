@@ -2,6 +2,9 @@
 
 import { motion } from "framer-motion";
 import { Check, Star, Zap, Server, Rocket, Crown } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import OrderModal from "./OrderModal";
 
 const pricingPlans = [
   {
@@ -100,6 +103,27 @@ const vpsPlans = [
 ];
 
 export default function Pricing() {
+  const router = useRouter();
+  const [selectedPlan, setSelectedPlan] = useState<{
+    plan: (typeof pricingPlans)[0];
+    type: "hosting" | "vps";
+  } | null>(null);
+
+  const handleSelectPlan = (
+    plan: (typeof pricingPlans)[0],
+    type: "hosting" | "vps",
+  ) => {
+    // Redirect ke halaman order dengan query params
+    const queryParams = new URLSearchParams({
+      plan: plan.name,
+      type: type,
+      price: plan.price,
+      period: plan.period,
+    });
+
+    router.push(`/order?${queryParams.toString()}`);
+  };
+
   return (
     <section id="pricing" className="relative py-24 overflow-hidden">
       {/* Background */}
@@ -218,12 +242,8 @@ export default function Pricing() {
 
                 {/* CTA Button */}
                 <div className="p-8 pt-0 mt-auto">
-                  <a
-                    href={`https://wa.me/082332238228?text=${encodeURIComponent(
-                      `Halo LumiCloud!\n\nSaya tertarik untuk berlangganan:\n\nPaket: ${plan.name}\nHarga: Rp ${plan.price}${plan.period}\n\nMohon informasi lebih lanjut untuk proses pemesanan.\n\nTerima kasih!`,
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    onClick={() => handleSelectPlan(plan, "hosting")}
                     className={`block w-full py-4 rounded-xl font-semibold transition-all duration-300 text-center ${
                       plan.popular
                         ? "bg-gradient-to-r from-lumi-purple-500 to-lumi-blue-500 text-white shadow-lg shadow-lumi-purple-500/30 hover:shadow-lumi-purple-500/50 hover:scale-[1.02]"
@@ -231,7 +251,7 @@ export default function Pricing() {
                     }`}
                   >
                     Pilih Paket {plan.name}
-                  </a>
+                  </button>
                 </div>
               </motion.div>
             );
@@ -335,6 +355,26 @@ export default function Pricing() {
               <div className="mt-4 pt-4 border-t border-white/10">
                 <button
                   disabled={vps.soldOut}
+                  onClick={() =>
+                    !vps.soldOut &&
+                    handleSelectPlan(
+                      {
+                        name: vps.name,
+                        description: vps.specs,
+                        price: vps.price,
+                        period: "/bulan",
+                        icon: Server,
+                        features: [vps.specs],
+                        popular: false,
+                        gradient: "from-lumi-gold-500 to-lumi-gold-600",
+                        iconBg: "bg-lumi-gold-500/20",
+                        iconColor: "text-lumi-gold-400",
+                        checkColor: "text-lumi-gold-400",
+                        borderColor: "hover:border-lumi-gold-500/50",
+                      },
+                      "vps",
+                    )
+                  }
                   className={`w-full py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${
                     vps.soldOut
                       ? "bg-gradient-to-r from-gray-500/10 to-gray-600/10 text-gray-500 cursor-not-allowed border border-gray-500/20"

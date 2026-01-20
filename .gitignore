@@ -18,6 +18,7 @@ Thumbs.db
 
 # Env files
 .env*
+!.env.example
 
 # VSCode settings
 .vscode/
@@ -40,3 +41,11 @@ exported/
 
 # Ignore public images cache (optional)
 public/images/cache/
+
+# Prisma generated files
+/lib/generated/prisma
+
+# File uploads
+uploads/
+*.zip
+*.tar.gz

@@ -3,6 +3,7 @@ export const revalidate = 0;
 
 import type { Metadata } from "next";
 import "./globals.css";
+import Providers from "@/components/Providers";
 
 export const metadata: Metadata = {
   title: "LumiCloud - Cloud Hosting Cepat, Aman & Terpercaya",
@@ -31,7 +32,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id" className="scroll-smooth">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
