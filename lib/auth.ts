@@ -33,6 +33,13 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Password salah");
         }
 
+        // Cek apakah email sudah diverifikasi
+        if (!user.emailVerified) {
+          throw new Error(
+            "Email belum diverifikasi. Silakan cek email Anda untuk kode OTP.",
+          );
+        }
+
         return {
           id: user.id,
           email: user.email,

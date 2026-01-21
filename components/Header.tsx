@@ -113,7 +113,9 @@ export default function Header() {
                     </span>
                   </div>
                   <button
-                    onClick={() => signOut()}
+                    onClick={() =>
+                      signOut({ callbackUrl: window.location.origin })
+                    }
                     className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors"
                   >
                     <LogOut className="w-4 h-4" />
@@ -180,7 +182,9 @@ export default function Header() {
                     </span>
                   </div>
                   <button
-                    onClick={() => signOut()}
+                    onClick={() =>
+                      signOut({ callbackUrl: window.location.origin })
+                    }
                     className="flex items-center gap-2 justify-center px-4 py-2 text-sm text-white bg-red-500/20 rounded-lg hover:bg-red-500/30 transition-colors"
                   >
                     <LogOut className="w-4 h-4" />

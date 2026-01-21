@@ -10,16 +10,21 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(cuid())
-  email         String         @unique
-  password      String
-  name          String
-  phone         String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  orders        Order[]
-  subscriptions Subscription[]
-  websites      Website[]
+  id              String         @id @default(cuid())
+  email           String         @unique
+  password        String
+  name            String
+  phone           String?
+  emailVerified   Boolean        @default(false)
+  otp             String?
+  otpExpiry       DateTime?
+  otpAttempts     Int            @default(0)
+  otpBlockedUntil DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  orders          Order[]
+  subscriptions   Subscription[]
+  websites        Website[]
 }
 
 model Plan {

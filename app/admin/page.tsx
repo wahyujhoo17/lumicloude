@@ -54,7 +54,7 @@ export default function AdminDashboard() {
   };
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: "/" });
+    await signOut({ callbackUrl: window.location.origin });
   };
 
   if (status === "loading" || loading) {
