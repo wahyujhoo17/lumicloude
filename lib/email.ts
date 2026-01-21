@@ -55,6 +55,12 @@ export class EmailService {
         subject: params.subject,
         text: params.text || "",
         html: params.html,
+        headers: {
+          "X-Mailer": "LumiCloud Mailer",
+          "X-Priority": "1",
+          "X-MSMail-Priority": "High",
+          Importance: "high",
+        },
       });
 
       console.log("Email sent:", info.messageId);
@@ -79,17 +85,17 @@ export class EmailService {
           <title>Verifikasi Email - LumiCloud</title>
           <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
         </head>
-        <body style="margin: 0; font-family: 'Poppins', sans-serif; background: #ffffff; font-size: 14px;">
-          <div style="max-width: 680px; margin: 0 auto; padding: 45px 30px 60px; background: #f8f9ff; background-image: url(https://lumicloud.my.id/images/email-bg.png); background-repeat: no-repeat; background-size: 800px 452px; background-position: top center; font-size: 14px; color: #434343;">
+        <body style="margin: 0; font-family: 'Poppins', sans-serif; background: #f8f9fa; font-size: 14px;">
+          <div style="max-width: 680px; margin: 0 auto; padding: 45px 30px 60px; background: #f8f9fa; background-image: url(https://lumicloud.my.id/images/email-bg.png); background-repeat: no-repeat; background-size: 800px 452px; background-position: top center; font-size: 14px; color: #434343;">
             <header>
               <table style="width: 100%;">
                 <tbody>
                   <tr style="height: 0;">
                     <td>
-                      <img alt="LumiCloud Logo" src="https://lumicloud.my.id/images/logo.png" height="40px" style="border-radius: 8px;" />
+                      <img alt="LumiCloud Logo" src="https://lumicloud.my.id/images/logo.png" height="60px" style="border-radius: 8px;" />
                     </td>
                     <td style="text-align: right;">
-                      <span style="font-size: 16px; line-height: 30px; color: #666666;">${new Date().toLocaleDateString("id-ID", { year: "numeric", month: "long", day: "numeric" })}</span>
+                      <span style="font-size: 16px; line-height: 30px; color: #fff;">${new Date().toLocaleDateString("id-ID", { year: "numeric", month: "long", day: "numeric" })}</span>
                     </td>
                   </tr>
                 </tbody>
@@ -97,7 +103,7 @@ export class EmailService {
             </header>
 
             <main>
-              <div style="margin: 0; margin-top: 70px; padding: 92px 30px 115px; background: #ffffff; border-radius: 30px; text-align: center; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);">
+              <div style="margin: 0; margin-top: 70px; padding: 92px 30px 115px; background: #fff; border-radius: 30px; text-align: center; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);">
                 <div style="width: 100%; max-width: 489px; margin: 0 auto;">
                   <h1 style="margin: 0; font-size: 24px; font-weight: 500; color: #1f1f1f;">Verifikasi Email Anda</h1>
                   <p style="margin: 0; margin-top: 17px; font-size: 16px; font-weight: 500;">Halo ${params.name},</p>
@@ -131,10 +137,10 @@ export class EmailService {
               <p style="margin: 0; margin-top: 8px; color: #434343; font-size: 14px;">Cloud Hosting Terpercaya untuk Website Anda</p>
               <div style="margin: 0; margin-top: 16px;">
                 <a href="https://lumicloud.my.id" target="_blank" style="display: inline-block; margin: 0 8px;">
-                  <img width="36px" alt="Website" src="https://lumicloud.my.id/images/website-icon.png" style="border-radius: 50%; background: #0090e6; padding: 8px;" />
+                  <img src="https://lumicloud.my.id/images/web.jpg" alt="Website" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" />
                 </a>
                 <a href="mailto:support@lumicloud.my.id" target="_blank" style="display: inline-block; margin: 0 8px;">
-                  <img width="36px" alt="Email" src="https://lumicloud.my.id/images/email-icon.png" style="border-radius: 50%; background: #ea4335; padding: 8px;" />
+                  <img src="https://lumicloud.my.id/images/mail.png" alt="Email" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" />
                 </a>
               </div>
               <p style="margin: 0; margin-top: 16px; color: #434343; font-size: 12px;">Copyright © 2026 LumiCloud. All rights reserved.</p>
@@ -180,8 +186,8 @@ export class EmailService {
           <title>Selamat Datang - LumiCloud</title>
           <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
         </head>
-        <body style="margin: 0; font-family: 'Poppins', sans-serif; background: #ffffff; font-size: 14px;">
-          <div style="max-width: 680px; margin: 0 auto; padding: 45px 30px 60px; background: #f8f9ff; background-image: url(https://lumicloud.my.id/images/email-bg.png); background-repeat: no-repeat; background-size: 800px 452px; background-position: top center; font-size: 14px; color: #434343;">
+        <body style="margin: 0; font-family: 'Poppins', sans-serif; background: #f8f9fa; font-size: 14px;">
+          <div style="max-width: 680px; margin: 0 auto; padding: 45px 30px 60px; background: #f8f9fa; background-image: url(https://lumicloud.my.id/images/email-bg.png); background-repeat: no-repeat; background-size: 800px 452px; background-position: top center; font-size: 14px; color: #434343;">
             <header>
               <table style="width: 100%;">
                 <tbody>
@@ -281,10 +287,10 @@ export class EmailService {
               <p style="margin: 0; margin-top: 8px; color: #434343; font-size: 14px;">Cloud Hosting Terpercaya untuk Website Anda</p>
               <div style="margin: 0; margin-top: 16px;">
                 <a href="https://lumicloud.my.id" target="_blank" style="display: inline-block; margin: 0 8px;">
-                  <img width="36px" alt="Website" src="https://lumicloud.my.id/images/website-icon.png" style="border-radius: 50%; background: #0090e6; padding: 8px;" />
+                  <img src="https://lumicloud.my.id/images/web.jpg" alt="Website" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" />
                 </a>
                 <a href="mailto:support@lumicloud.my.id" target="_blank" style="display: inline-block; margin: 0 8px;">
-                  <img width="36px" alt="Email" src="https://lumicloud.my.id/images/email-icon.png" style="border-radius: 50%; background: #ea4335; padding: 8px;" />
+                  <img src="https://lumicloud.my.id/images/mail.png" alt="Email" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" />
                 </a>
               </div>
               <p style="margin: 0; margin-top: 16px; color: #434343; font-size: 12px;">Copyright © 2026 LumiCloud. All rights reserved.</p>
