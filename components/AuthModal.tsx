@@ -21,6 +21,7 @@ export default function AuthModal({
   const [isLogin, setIsLogin] = useState(true);
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
+  const [showResetPassword, setShowResetPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -108,6 +109,39 @@ export default function AuthModal({
     setError("Email berhasil diverifikasi! Silakan login.");
   };
 
+  const handleResetPassword = async () => {
+    if (!formData.email) {
+      setError("Email harus diisi");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Gagal mengirim email reset password");
+      }
+
+      // Reset form and show success message
+      setShowResetPassword(false);
+      setFormData({ ...formData, email: "" });
+      setError("Link reset password telah dikirim ke email Anda");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <VerifyOTPModal
@@ -131,12 +165,18 @@ export default function AuthModal({
             {/* Header */}
             <div className="p-6 border-b border-white/10">
               <h3 className="text-2xl font-bold text-white">
-                {isLogin ? "Masuk ke Akun" : "Daftar Akun Baru"}
+                {showResetPassword
+                  ? "Reset Password"
+                  : isLogin
+                    ? "Masuk ke Akun"
+                    : "Daftar Akun Baru"}
               </h3>
               <p className="text-gray-400 mt-2">
-                {isLogin
-                  ? "Masuk untuk melanjutkan pembelian"
-                  : "Buat akun untuk memulai"}
+                {showResetPassword
+                  ? "Masukkan email Anda untuk menerima link reset password"
+                  : isLogin
+                    ? "Masuk untuk melanjutkan pembelian"
+                    : "Buat akun untuk memulai"}
               </p>
             </div>
 
@@ -148,120 +188,183 @@ export default function AuthModal({
                 </div>
               )}
 
-              {/* Toggle Login/Register */}
-              <div className="flex gap-2 p-1 bg-white/5 rounded-lg">
-                <button
-                  type="button"
-                  onClick={() => setIsLogin(true)}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    isLogin
-                      ? "bg-lumi-purple-500 text-white"
-                      : "text-gray-400 hover:text-white"
-                  }`}
-                >
-                  Login
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsLogin(false)}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    !isLogin
-                      ? "bg-lumi-purple-500 text-white"
-                      : "text-gray-400 hover:text-white"
-                  }`}
-                >
-                  Register
-                </button>
-              </div>
+              {showResetPassword ? (
+                // Reset Password Form
+                <>
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-2">
+                      <Mail className="w-4 h-4 inline mr-2" />
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-lumi-purple-500 focus:outline-none transition-colors"
+                      placeholder="your@email.com"
+                    />
+                  </div>
 
-              {!isLogin && (
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">
-                    <User className="w-4 h-4 inline mr-2" />
-                    Nama Lengkap
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-lumi-purple-500 focus:outline-none transition-colors"
-                    placeholder="John Doe"
-                  />
-                </div>
+                  <button
+                    type="button"
+                    onClick={handleResetPassword}
+                    disabled={loading}
+                    className="w-full py-4 bg-gradient-to-r from-lumi-purple-500 to-lumi-blue-500 text-white rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Mengirim...
+                      </>
+                    ) : (
+                      "Kirim Link Reset Password"
+                    )}
+                  </button>
+
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      onClick={() => setShowResetPassword(false)}
+                      className="text-sm text-lumi-purple-400 hover:text-lumi-purple-300 transition-colors"
+                    >
+                      Kembali ke Login
+                    </button>
+                  </div>
+                </>
+              ) : (
+                // Login/Register Form
+                <>
+                  {/* Toggle Login/Register */}
+                  <div className="flex gap-2 p-1 bg-white/5 rounded-lg">
+                    <button
+                      type="button"
+                      onClick={() => setIsLogin(true)}
+                      className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        isLogin
+                          ? "bg-lumi-purple-500 text-white"
+                          : "text-gray-400 hover:text-white"
+                      }`}
+                    >
+                      Login
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsLogin(false)}
+                      className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        !isLogin
+                          ? "bg-lumi-purple-500 text-white"
+                          : "text-gray-400 hover:text-white"
+                      }`}
+                    >
+                      Register
+                    </button>
+                  </div>
+
+                  {!isLogin && (
+                    <div>
+                      <label className="block text-sm text-gray-400 mb-2">
+                        <User className="w-4 h-4 inline mr-2" />
+                        Nama Lengkap
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.name}
+                        onChange={(e) =>
+                          setFormData({ ...formData, name: e.target.value })
+                        }
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-lumi-purple-500 focus:outline-none transition-colors"
+                        placeholder="John Doe"
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-2">
+                      <Mail className="w-4 h-4 inline mr-2" />
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-lumi-purple-500 focus:outline-none transition-colors"
+                      placeholder="your@email.com"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-2">
+                      <Lock className="w-4 h-4 inline mr-2" />
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      value={formData.password}
+                      onChange={(e) =>
+                        setFormData({ ...formData, password: e.target.value })
+                      }
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-lumi-purple-500 focus:outline-none transition-colors"
+                      placeholder="••••••••"
+                    />
+                  </div>
+
+                  {!isLogin && (
+                    <div>
+                      <label className="block text-sm text-gray-400 mb-2">
+                        <Phone className="w-4 h-4 inline mr-2" />
+                        No. WhatsApp
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        value={formData.phone}
+                        onChange={(e) =>
+                          setFormData({ ...formData, phone: e.target.value })
+                        }
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-lumi-purple-500 focus:outline-none transition-colors"
+                        placeholder="08123456789"
+                      />
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-4 bg-gradient-to-r from-lumi-purple-500 to-lumi-blue-500 text-white rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Memproses...
+                      </>
+                    ) : isLogin ? (
+                      "Masuk"
+                    ) : (
+                      "Daftar"
+                    )}
+                  </button>
+
+                  {isLogin && (
+                    <div className="text-center">
+                      <button
+                        type="button"
+                        onClick={() => setShowResetPassword(true)}
+                        className="text-sm text-lumi-purple-400 hover:text-lumi-purple-300 transition-colors"
+                      >
+                        Lupa Password?
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
-
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">
-                  <Mail className="w-4 h-4 inline mr-2" />
-                  Email
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-lumi-purple-500 focus:outline-none transition-colors"
-                  placeholder="your@email.com"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">
-                  <Lock className="w-4 h-4 inline mr-2" />
-                  Password
-                </label>
-                <input
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-lumi-purple-500 focus:outline-none transition-colors"
-                  placeholder="••••••••"
-                />
-              </div>
-
-              {!isLogin && (
-                <div>
-                  <label className="block text-sm text-gray-400 mb-2">
-                    <Phone className="w-4 h-4 inline mr-2" />
-                    No. WhatsApp
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    value={formData.phone}
-                    onChange={(e) =>
-                      setFormData({ ...formData, phone: e.target.value })
-                    }
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-lumi-purple-500 focus:outline-none transition-colors"
-                    placeholder="08123456789"
-                  />
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-4 bg-gradient-to-r from-lumi-purple-500 to-lumi-blue-500 text-white rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Memproses...
-                  </>
-                ) : isLogin ? (
-                  "Masuk"
-                ) : (
-                  "Daftar"
-                )}
-              </button>
             </form>
           </div>
         </div>

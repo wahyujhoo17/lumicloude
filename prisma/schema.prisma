@@ -20,6 +20,8 @@ model User {
   otpExpiry       DateTime?
   otpAttempts     Int            @default(0)
   otpBlockedUntil DateTime?
+  resetToken      String?
+  resetTokenExpiry DateTime?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   orders          Order[]
