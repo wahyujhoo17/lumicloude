@@ -79,7 +79,8 @@ export async function POST(req: NextRequest) {
 
     // Generate nama file unik
     const timestamp = Date.now();
-    const filename = `${timestamp}-${file.name}`;
+    const safeFilename = path.basename(file.name);
+    const filename = `${timestamp}-${safeFilename}`;
     const filepath = path.join(uploadDir, filename);
 
     // Simpan file
@@ -92,7 +93,7 @@ export async function POST(req: NextRequest) {
       data: {
         websiteId,
         filename,
-        originalName: file.name,
+        originalName: safeFilename,
         mimeType: file.type,
         size: file.size,
         path: filepath,

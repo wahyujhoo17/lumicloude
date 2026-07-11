@@ -12,12 +12,15 @@ async function main() {
 
   const admin = await prisma.user.upsert({
     where: { email: "admin@lumicloud.com" },
-    update: {},
+    update: {
+      emailVerified: true,
+    },
     create: {
       email: "admin@lumicloud.com",
       password: hashedPassword,
       name: "Admin LumiCloud",
       phone: "08123456789",
+      emailVerified: true,
     },
   });
 
@@ -28,12 +31,15 @@ async function main() {
 
   const testUser = await prisma.user.upsert({
     where: { email: "test@lumicloud.com" },
-    update: {},
+    update: {
+      emailVerified: true,
+    },
     create: {
       email: "test@lumicloud.com",
       password: testUserPassword,
       name: "Test User",
       phone: "08987654321",
+      emailVerified: true,
     },
   });
 
